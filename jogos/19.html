@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardiões da Água Capixaba</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Fundo com paisagem capixaba */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(to bottom, 
+                    #87CEEB 0%, 
+                    #87CEEB 40%, 
+                    #90EE90 40%, 
+                    #90EE90 70%, 
+                    #228B22 70%, 
+                    #228B22 100%
+                );
+            z-index: -2;
+        }
+
+        /* Montanhas */
+        .montanhas {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .montanha {
+            position: absolute;
+            bottom: 0;
+        }
+
+        .montanha1 {
+            width: 0;
+            height: 0;
+            border-left: 300px solid transparent;
+            border-right: 300px solid transparent;
+            border-bottom: 400px solid #4a7c59;
+            left: -100px;
+            bottom: 0;
+            filter: brightness(0.8);
+        }
+
+        .montanha2 {
+            width: 0;
+            height: 0;
+            border-left: 400px solid transparent;
+            border-right: 400px solid transparent;
+            border-bottom: 500px solid #2d5a3d;
+            left: 20%;
+            bottom: 0;
+        }
+
+        .montanha3 {
+            width: 0;
+            height: 0;
+            border-left: 350px solid transparent;
+            border-right: 350px solid transparent;
+            border-bottom: 450px solid #3d6b4a;
+            right: 10%;
+            bottom: 0;
+            filter: brightness(0.9);
+        }
+
+        /* Nuvens */
+        .nuvem {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 100px;
+            animation: moverNuvem 60s linear infinite;
+            z-index: -1;
+        }
+
+        .nuvem::before,
+        .nuvem::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 100px;
+        }
+
+        .nuvem1 {
+            width: 100px;
+            height: 40px;
+            top: 10%;
+            left: -150px;
+        }
+
+        .nuvem1::before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 10px;
+        }
+
+        .nuvem1::after {
+            width: 60px;
+            height: 40px;
+            top: -15px;
+            right: 10px;
+        }
+
+        .nuvem2 {
+            width: 120px;
+            height: 45px;
+            top: 20%;
+            left: -200px;
+            animation-delay: -30s;
+        }
+
+        .nuvem2::before {
+            width: 60px;
+            height: 60px;
+            top: -30px;
+            left: 15px;
+        }
+
+        .nuvem2::after {
+            width: 70px;
+            height: 45px;
+            top: -20px;
+            right: 15px;
+        }
+
+        @keyframes moverNuvem {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(100vw + 200px)); }
+        }
+
+        /* Tela Inicial */
+        #telaInicial {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(12, 74, 110, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #telaInicial.hidden {
+            display: none;
+        }
+
+        .logo-titulo {
+            font-size: 2.5em;
+            color: #7dd3fc;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .instrucoes {
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .instrucoes h2 {
+            color: #0369a1;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .instrucoes p {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .instrucoes ul {
+            text-align: left;
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .instrucoes li {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .btnIniciar {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 20px 50px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(16,185,129,0.4);
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btnIniciar:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(16,185,129,0.6);
+        }
+
+        .btnIniciar:active {
+            transform: translateY(-1px);
+        }
+
+        /* Header do Jogo */
+        #jogo {
+            display: none;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #jogo.ativo {
+            display: block;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .titulo-jogo {
+            text-align: center;
+            color: #0369a1;
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .estatisticas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-valor {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        /* Área do Rio (Clicker Principal) */
+        .area-rio {
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .rio-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            cursor: pointer;
+            transition: transform 0.1s;
+            user-select: none;
+        }
+
+        .rio-container:active {
+            transform: scale(0.95);
+        }
+
+        .rio-visual {
+            width: 100%;
+            height: 300px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .rio-poluido {
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+        }
+
+        .rio-melhorando {
+            background: linear-gradient(135deg, #65a30d 0%, #4d7c0f 100%);
+        }
+
+        .rio-limpo {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+        }
+
+        .click-effect {
+            position: absolute;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 2em;
+            pointer-events: none;
+            animation: floatUp 1s forwards;
+        }
+
+        @keyframes floatUp {
+            to {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+
+        .mensagem-rio {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #0369a1;
+            font-weight: bold;
+            min-height: 30px;
+        }
+
+        /* Loja de Melhorias */
+        .loja {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .loja h2 {
+            color: #0369a1;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8em;
+        }
+
+        .melhorias-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .melhoria {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #0ea5e9;
+            transition: all 0.3s;
+        }
+
+        .melhoria:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(14,165,233,0.3);
+        }
+
+        .melhoria-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .melhoria-icon {
+            font-size: 2.5em;
+            margin-right: 10px;
+        }
+
+        .melhoria-titulo {
+            font-size: 1.2em;
+            color: #0369a1;
+            font-weight: bold;
+        }
+
+        .melhoria-descricao {
+            color: #555;
+            margin: 10px 0;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .melhoria-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .melhoria-quantidade {
+            background: #0ea5e9;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .btn-comprar {
+            background: #94a3b8;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: not-allowed;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 1em;
+            opacity: 0.6;
+        }
+
+        .btn-comprar.disponivel {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            cursor: pointer;
+            opacity: 1;
+            box-shadow: 0 3px 10px rgba(16,185,129,0.3);
+        }
+
+        .btn-comprar.disponivel:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(16,185,129,0.5);
+        }
+
+        .btn-comprar.disponivel:active {
+            transform: scale(0.98);
+        }
+
+        /* Painel de Conquistas */
+        .conquistas {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .conquistas h2 {
+            color: #0369a1;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .conquista-item {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            border: 2px solid #f59e0b;
+        }
+
+        .conquista-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+
+        .conquista-bloqueada {
+            opacity: 0.4;
+            border-color: #94a3b8;
+        }
+
+        /* Mensagens Educativas */
+        .mensagem-educativa {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+            border: 2px solid #10b981;
+            animation: slideIn 0.5s;
+            transition: opacity 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .mensagem-educativa p {
+            color: #065f46;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .logo-titulo {
+                font-size: 1.8em;
+            }
+
+            .instrucoes {
+                padding: 20px;
+            }
+
+            .titulo-jogo {
+                font-size: 1.5em;
+            }
+
+            .estatisticas {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .rio-visual {
+                height: 250px;
+                font-size: 3em;
+            }
+
+            .melhorias-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .montanha1, .montanha2, .montanha3 {
+                transform: scale(0.7);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Paisagem de fundo -->
+    <div class="montanhas">
+        <div class="montanha montanha1"></div>
+        <div class="montanha montanha2"></div>
+        <div class="montanha montanha3"></div>
+    </div>
+    <div class="nuvem nuvem1"></div>
+    <div class="nuvem nuvem2"></div>
+
+    <!-- Tela Inicial -->
+    <div id="telaInicial">
+        <div class="logo-titulo">🌊 Guardiões da Água Capixaba 💧</div>
+        
+        <div class="instrucoes">
+            <h2>Bem-vindo, Guardião!</h2>
+            <p>Os rios capixabas precisam da sua ajuda! O Rio Doce, o Santa Maria da Vitória e o Jucu estão precisando de tratamento.</p>
+            
+            <h3 style="color: #0369a1; margin-top: 20px;">Como jogar:</h3>
+            <ul>
+                <li><strong>Clique no rio</strong> para limpar a água e ganhar Gotas Limpas 💧</li>
+                <li><strong>Compre melhorias</strong> como estações de tratamento, filtros e bombas</li>
+                <li><strong>Melhore automaticamente</strong> a qualidade da água com suas construções</li>
+                <li><strong>Desbloqueie conquistas</strong> e veja o impacto do saneamento básico!</li>
+            </ul>
+            
+            <p style="margin-top: 20px; color: #059669; font-weight: bold;">🌿 Cada gota limpa é uma vitória para o Espírito Santo! 🌿</p>
+        </div>
+        
+        <button class="btnIniciar" id="btnIniciar">🚀 Começar a Missão!</button>
+    </div>
+
+    <!-- Área do Jogo -->
+    <div id="jogo">
+        <div class="header">
+            <h1 class="titulo-jogo">🌊 Guardiões da Água Capixaba</h1>
+            <div class="estatisticas">
+                <div class="stat-box">
+                    <div class="stat-label">💧 Gotas Limpas</div>
+                    <div class="stat-valor" id="pontosDisplay">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">🌊 Pureza da Água</div>
+                    <div class="stat-valor" id="qualidadeDisplay">0%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">💚 Saúde da População</div>
+                    <div class="stat-valor" id="saudeDisplay">0%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">⚡ Gotas por Segundo</div>
+                    <div class="stat-valor" id="gotasPorSegundoDisplay">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área do Rio (Clicker) -->
+        <div class="area-rio">
+            <h2>🏞️ Rio Santa Maria da Vitória</h2>
+            <p style="color: #64748b; margin-bottom: 15px;">Clique no rio para começar a limpeza!</p>
+            
+            <div class="rio-container" id="rioContainer">
+                <div class="rio-visual rio-poluido" id="rioVisual">
+                    <span id="rioEmoji">🏭</span>
+                </div>
+            </div>
+            
+            <div class="mensagem-rio" id="mensagemRio">
+                "Vamos começar a limpar este rio! Cada clique ajuda!"
+            </div>
+        </div>
+
+        <!-- Loja de Melhorias -->
+        <div class="loja">
+            <h2>🏗️ Construa o Sistema de Saneamento</h2>
+            <div class="melhorias-grid" id="lojaMelhorias">
+                <!-- Melhorias serão adicionadas por JavaScript -->
+            </div>
+        </div>
+
+        <!-- Conquistas -->
+        <div class="conquistas">
+            <h2>🏆 Conquistas do Guardião</h2>
+            <div id="conquistasLista">
+                <!-- Conquistas serão adicionadas por JavaScript -->
+            </div>
+        </div>
+
+        <!-- Mensagens Educativas -->
+        <div id="mensagensEducativas"></div>
+    </div>
+
+    <script>
+        // ========== VARIÁVEIS DO JOGO ==========
+        let pontos = 0;
+        let gotasPorClique = 1;
+        let gotasPorSegundo = 0;
+        let qualidadeAgua = 0;
+        let saudePopulacao = 0;
+
+        // Melhorias disponíveis
+        const melhorias = [
+            {
+                id: 'filtro',
+                nome: 'Filtro de Areia',
+                icone: '🧹',
+                descricao: 'Remove impurezas básicas da água. Cada filtro purifica 0.1 gotas/seg.',
+                custoBase: 10,
+                quantidade: 0,
+                producao: 0.1
+            },
+            {
+                id: 'bomba',
+                nome: 'Bomba de Captação',
+                icone: '⚙️',
+                descricao: 'Bombeia água do rio para tratamento. Produz 0.5 gotas/seg.',
+                custoBase: 50,
+                quantidade: 0,
+                producao: 0.5
+            },
+            {
+                id: 'estacao',
+                nome: 'Estação de Tratamento',
+                icone: '🏭',
+                descricao: 'Centro completo da CESAN. Gera 2 gotas/seg e melhora a saúde!',
+                custoBase: 200,
+                quantidade: 0,
+                producao: 2
+            },
+            {
+                id: 'rede',
+                nome: 'Rede de Coleta',
+                icone: '🔧',
+                descricao: 'Coleta esgoto das casas. Impede poluição e gera 5 gotas/seg.',
+                custoBase: 800,
+                quantidade: 0,
+                producao: 5
+            },
+            {
+                id: 'biodigestor',
+                nome: 'Biodigestor',
+                icone: '♻️',
+                descricao: 'Tecnologia avançada que transforma resíduos. Gera 15 gotas/seg!',
+                custoBase: 3000,
+                quantidade: 0,
+                producao: 15
+            },
+            {
+                id: 'laboratorio',
+                nome: 'Laboratório de Análise',
+                icone: '🔬',
+                descricao: 'Monitora a qualidade da água constantemente. Produz 50 gotas/seg.',
+                custoBase: 10000,
+                quantidade: 0,
+                producao: 50
+            }
+        ];
+
+        // Conquistas
+        const conquistas = [
+            { id: 1, nome: 'Primeira Gota', descricao: 'Colete sua primeira gota limpa', requisito: 1, desbloqueada: false, icone: '💧' },
+            { id: 2, nome: 'Guardião Iniciante', descricao: 'Alcance 100 gotas limpas', requisito: 100, desbloqueada: false, icone: '🌱' },
+            { id: 3, nome: 'Construtor Capixaba', descricao: 'Compre sua primeira melhoria', requisito: 'melhoria', desbloqueada: false, icone: '🏗️' },
+            { id: 4, nome: 'Rio Saudável', descricao: 'Atinja 50% de pureza da água', requisito: 'qualidade50', desbloqueada: false, icone: '🌊' },
+            { id: 5, nome: 'Defensor da Vida', descricao: 'Alcance 1000 gotas limpas', requisito: 1000, desbloqueada: false, icone: '🦅' },
+            { id: 6, nome: 'Mestre do Saneamento', descricao: 'Atinja 100% de pureza e saúde', requisito: 'perfeito', desbloqueada: false, icone: '👑' }
+        ];
+
+        // Mensagens educativas
+        const mensagensEducativas = [
+            "💡 Você sabia? O esgoto tratado volta limpo para o rio!",
+            "🌿 Saneamento básico previne doenças como diarreia e hepatite.",
+            "🐟 Rios limpos preservam peixes, garças e toda a vida aquática capixaba.",
+            "🏖️ Tratamento adequado protege nossas praias e manguezais.",
+            "💚 Cada gota limpa é uma vitória para o Espírito Santo!",
+            "🌊 A CESAN trabalha todos os dias para levar água tratada aos capixabas.",
+            "🔬 O tratamento de água remove 99,9% das impurezas!",
+            "🌳 Saneamento é saúde, qualidade de vida e preservação ambiental!"
+        ];
+
+        let mensagemAtual = 0;
+
+        // ========== FUNÇÕES PRINCIPAIS ==========
+
+        function iniciarJogo() {
+            document.getElementById('telaInicial').classList.add('hidden');
+            document.getElementById('jogo').classList.add('ativo');
+            criarLoja();
+            atualizarConquistas();
+            iniciarProducaoAutomatica();
+            mostrarMensagemEducativa();
+        }
+
+        function clicarRio(event) {
+            pontos += gotasPorClique;
+            
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const efeito = document.createElement('div');
+            efeito.className = 'click-effect';
+            efeito.textContent = '+' + gotasPorClique;
+            efeito.style.left = x + 'px';
+            efeito.style.top = y + 'px';
+            efeito.style.position = 'absolute';
+            document.getElementById('rioContainer').appendChild(efeito);
+            
+            setTimeout(() => efeito.remove(), 1000);
+            
+            atualizarDisplay();
+            verificarConquistas();
+        }
+
+        function comprarMelhoria(id) {
+            const melhoria = melhorias.find(m => m.id === id);
+            if (!melhoria) return;
+            
+            const custo = calcularCusto(melhoria);
+            
+            // Verifica se tem gotas suficientes
+            if (pontos >= custo) {
+                // Deduz o custo
+                pontos -= custo;
+                
+                // Aumenta a quantidade da melhoria
+                melhoria.quantidade++;
+                
+                // Aumenta a produção por segundo
+                gotasPorSegundo += melhoria.producao;
+                
+                // Melhora o clique conforme compra melhorias
+                const totalMelhorias = melhorias.reduce((acc, m) => acc + m.quantidade, 0);
+                gotasPorClique = 1 + Math.floor(totalMelhorias / 3);
+                
+                // Atualiza tudo
+                atualizarDisplay();
+                criarLoja();
+                verificarConquistas();
+                
+                // Mostra feedback visual
+                mostrarFeedback('✅ ' + melhoria.nome + ' construído! +' + melhoria.producao + ' gotas/seg');
+                
+                console.log('Compra realizada!', {
+                    melhoria: melhoria.nome,
+                    quantidade: melhoria.quantidade,
+                    gotasPorSegundo: gotasPorSegundo,
+                    pontosRestantes: pontos
+                });
+            } else {
+                console.log('Gotas insuficientes!', {
+                    necessario: custo,
+                    disponivel: pontos
+                });
+            }
+        }
+
+        function calcularCusto(melhoria) {
+            return Math.floor(melhoria.custoBase * Math.pow(1.15, melhoria.quantidade));
+        }
+
+        function atualizarDisplay() {
+            document.getElementById('pontosDisplay').textContent = Math.floor(pontos);
+            document.getElementById('gotasPorSegundoDisplay').textContent = gotasPorSegundo.toFixed(1);
+            
+            const totalMelhorias = melhorias.reduce((acc, m) => acc + m.quantidade, 0);
+            qualidadeAgua = Math.min(100, totalMelhorias * 3);
+            document.getElementById('qualidadeDisplay').textContent = qualidadeAgua + '%';
+            
+            saudePopulacao = Math.min(100, qualidadeAgua * 0.8 + (gotasPorSegundo * 2));
+            document.getElementById('saudeDisplay').textContent = Math.floor(saudePopulacao) + '%';
+            
+            atualizarRio();
+            atualizarBotoesLoja();
+        }
+
+        function atualizarBotoesLoja() {
+            const botoes = document.querySelectorAll('.btn-comprar');
+            botoes.forEach(botao => {
+                const melhoriaId = botao.getAttribute('data-melhoria-id');
+                const melhoria = melhorias.find(m => m.id === melhoriaId);
+                if (melhoria) {
+                    const custo = calcularCusto(melhoria);
+                    const podeCumprar = pontos >= custo;
+                    
+                    if (podeCumprar) {
+                        botao.classList.add('disponivel');
+                    } else {
+                        botao.classList.remove('disponivel');
+                    }
+                }
+            });
+        }
+
+        function atualizarRio() {
+            const rio = document.getElementById('rioVisual');
+            const emoji = document.getElementById('rioEmoji');
+            const mensagem = document.getElementById('mensagemRio');
+            
+            rio.classList.remove('rio-poluido', 'rio-melhorando', 'rio-limpo');
+            
+            if (qualidadeAgua < 30) {
+                rio.classList.add('rio-poluido');
+                emoji.textContent = '🏭';
+                mensagem.textContent = '"Continue limpando! O rio ainda está poluído."';
+            } else if (qualidadeAgua < 70) {
+                rio.classList.add('rio-melhorando');
+                emoji.textContent = '🌿';
+                mensagem.textContent = '"Ótimo trabalho! A água está melhorando!"';
+            } else {
+                rio.classList.add('rio-limpo');
+                emoji.textContent = '🐟';
+                mensagem.textContent = '"Maravilha! O rio está limpo e cheio de vida!"';
+            }
+        }
+
+        function criarLoja() {
+            const loja = document.getElementById('lojaMelhorias');
+            loja.innerHTML = '';
+            
+            melhorias.forEach(melhoria => {
+                const custo = calcularCusto(melhoria);
+                const podeCumprar = pontos >= custo;
+                
+                const div = document.createElement('div');
+                div.className = 'melhoria';
+                div.innerHTML = `
+                    <div class="melhoria-header">
+                        <div class="melhoria-icon">${melhoria.icone}</div>
+                        <div class="melhoria-titulo">${melhoria.nome}</div>
+                    </div>
+                    <div class="melhoria-descricao">${melhoria.descricao}</div>
+                    <div class="melhoria-info">
+                        <div class="melhoria-quantidade">Qtd: ${melhoria.quantidade}</div>
+                        <button class="btn-comprar ${podeCumprar ? 'disponivel' : ''}" data-melhoria-id="${melhoria.id}">
+                            💧 ${custo}
+                        </button>
+                    </div>
+                `;
+                
+                loja.appendChild(div);
+            });
+            
+            // Adiciona event listeners DEPOIS de adicionar ao DOM
+            const botoes = loja.querySelectorAll('.btn-comprar');
+            botoes.forEach(botao => {
+                botao.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const melhoriaId = this.getAttribute('data-melhoria-id');
+                    console.log('Botão clicado! ID:', melhoriaId);
+                    comprarMelhoria(melhoriaId);
+                });
+            });
+        }
+
+        function iniciarProducaoAutomatica() {
+            setInterval(() => {
+                pontos += gotasPorSegundo / 10;
+                atualizarDisplay();
+            }, 100);
+        }
+
+        function verificarConquistas() {
+            conquistas.forEach(conquista => {
+                if (!conquista.desbloqueada) {
+                    let desbloqueou = false;
+                    
+                    if (typeof conquista.requisito === 'number' && pontos >= conquista.requisito) {
+                        desbloqueou = true;
+                    } else if (conquista.requisito === 'melhoria') {
+                        const temMelhoria = melhorias.some(m => m.quantidade > 0);
+                        if (temMelhoria) desbloqueou = true;
+                    } else if (conquista.requisito === 'qualidade50') {
+                        if (qualidadeAgua >= 50) desbloqueou = true;
+                    } else if (conquista.requisito === 'perfeito') {
+                        if (qualidadeAgua >= 100 && saudePopulacao >= 100) desbloqueou = true;
+                    }
+                    
+                    if (desbloqueou) {
+                        conquista.desbloqueada = true;
+                        mostrarFeedback('🏆 Conquista Desbloqueada: ' + conquista.nome + '!');
+                    }
+                }
+            });
+            
+            atualizarConquistas();
+        }
+
+        function atualizarConquistas() {
+            const lista = document.getElementById('conquistasLista');
+            lista.innerHTML = '';
+            
+            conquistas.forEach(conquista => {
+                const div = document.createElement('div');
+                div.className = 'conquista-item' + (conquista.desbloqueada ? '' : ' conquista-bloqueada');
+                div.innerHTML = `
+                    <div class="conquista-icon">${conquista.icone}</div>
+                    <div>
+                        <strong>${conquista.nome}</strong><br>
+                        <small>${conquista.descricao}</small>
+                    </div>
+                `;
+                lista.appendChild(div);
+            });
+        }
+
+        function mostrarFeedback(texto) {
+            const mensagemDiv = document.createElement('div');
+            mensagemDiv.className = 'mensagem-educativa';
+            mensagemDiv.innerHTML = `<p>${texto}</p>`;
+            document.getElementById('mensagensEducativas').appendChild(mensagemDiv);
+            
+            setTimeout(() => {
+                mensagemDiv.style.opacity = '0';
+                setTimeout(() => mensagemDiv.remove(), 500);
+            }, 3000);
+        }
+
+        function mostrarMensagemEducativa() {
+            setInterval(() => {
+                const mensagem = mensagensEducativas[mensagemAtual];
+                mostrarFeedback(mensagem);
+                mensagemAtual = (mensagemAtual + 1) % mensagensEducativas.length;
+            }, 15000);
+        }
+
+        // ========== EVENT LISTENERS ==========
+        document.getElementById('btnIniciar').addEventListener('click', iniciarJogo);
+        document.getElementById('rioContainer').addEventListener('click', clicarRio);
+
+        // ========== INICIALIZAÇÃO ==========
+        // O jogo aguarda o clique no botão iniciar
+    </script>
+</body>
+</html>

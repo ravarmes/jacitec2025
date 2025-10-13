@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anzol do Amanhã</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #4A90E2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 250px;
+            gap: 0;
+        }
+
+        .game-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-screen {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(180deg, #87CEEB 0%, #4682B4 50%, #1e4d7b 100%);
+            overflow: hidden;
+            cursor: crosshair;
+            transition: all 0.3s ease;
+        }
+
+        .game-screen.night {
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 50%, #1a252f 100%);
+        }
+
+        .game-screen.storm {
+            background: linear-gradient(180deg, #5d6d7b 0%, #455a64 50%, #37474f 100%);
+        }
+
+        .clouds {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            height: 60px;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255,255,255,0.7);
+            border-radius: 50px;
+            animation: float 20s infinite linear;
+        }
+
+        .cloud1 { width: 80px; height: 30px; top: 10px; left: -80px; }
+        .cloud2 { width: 60px; height: 25px; top: 40px; left: -100px; animation-delay: 5s; }
+
+        .game-screen.night .cloud {
+            background: rgba(200,200,200,0.3);
+        }
+
+        @keyframes float {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        .boat {
+            position: absolute;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 60px;
+            z-index: 10;
+        }
+
+        .boat-body {
+            position: absolute;
+            bottom: 0;
+            width: 80px;
+            height: 30px;
+            background: #8B4513;
+            border-radius: 0 0 40px 40px;
+            border: 3px solid #654321;
+        }
+
+        .boat-cabin {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            width: 30px;
+            height: 25px;
+            background: #D2691E;
+            border-radius: 5px;
+            border: 2px solid #654321;
+        }
+
+        .fish {
+            position: absolute;
+            width: 60px;
+            height: 40px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .fish.moving-left {
+            animation: swimLeft 4s infinite linear;
+        }
+
+        .fish.moving-right {
+            animation: swimRight 4s infinite linear;
+        }
+
+        @keyframes swimLeft {
+            0% { transform: translateX(0) translateY(0) scaleX(-1); }
+            25% { transform: translateX(-30px) translateY(-10px) scaleX(-1); }
+            50% { transform: translateX(-60px) translateY(5px) scaleX(-1); }
+            75% { transform: translateX(-30px) translateY(-5px) scaleX(-1); }
+            100% { transform: translateX(0) translateY(0) scaleX(-1); }
+        }
+
+        @keyframes swimRight {
+            0% { transform: translateX(0) translateY(0) scaleX(1); }
+            25% { transform: translateX(30px) translateY(-10px) scaleX(1); }
+            50% { transform: translateX(60px) translateY(5px) scaleX(1); }
+            75% { transform: translateX(30px) translateY(-5px) scaleX(1); }
+            100% { transform: translateX(0) translateY(0) scaleX(1); }
+        }
+
+        .fish.fast {
+            animation-duration: 2s !important;
+        }
+
+        .fish.rare {
+            filter: drop-shadow(0 0 8px gold);
+        }
+
+        .fish-caught {
+            animation: caught 0.5s ease-out;
+        }
+
+        @keyframes caught {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: translateY(-300px) scale(0.5); opacity: 0; }
+        }
+
+        .waves {
+            position: absolute;
+            bottom: 150px;
+            width: 100%;
+            height: 30px;
+            background: repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(255,255,255,0.3) 30px, rgba(255,255,255,0.3) 60px);
+            animation: wave 3s infinite linear;
+        }
+
+        @keyframes wave {
+            from { transform: translateX(0); }
+            to { transform: translateX(60px); }
+        }
+
+        .weather-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 30px;
+            z-index: 50;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e3c72;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            animation: fadeInOut 2s ease;
+            z-index: 100;
+            display: none;
+            text-align: center;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .sidebar {
+            background: #f5f5f5;
+            border-left: 1px solid #ddd;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .sidebar-section {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 12px;
+        }
+
+        .sidebar-section h4 {
+            color: #1e3c72;
+            margin-bottom: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .stat-small {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            padding: 3px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-small:last-child {
+            border-bottom: none;
+        }
+
+        .controls {
+            padding: 15px;
+            background: #f5f5f5;
+            border-top: 1px solid #ddd;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            font-size: 13px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 3px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #FF9800, #FFC107);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #F44336, #E91E63);
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .buttons.full {
+            grid-template-columns: 1fr;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-fish {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+        }
+
+        .btn-stats {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+        }
+
+        .btn-equipment {
+            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            background: #e74c3c;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            background: #c0392b;
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .modal-content h2 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .tutorial-section {
+            background: #f0f8ff;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .eco-message {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-size: 13px;
+        }
+
+        .eco-message h3 {
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .read-content {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .equipment-card {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .equipment-card:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .equipment-card.equipped {
+            border-color: #4CAF50;
+            background: #f0f8ff;
+        }
+
+        .equipment-icon {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .equipment-name {
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 4px;
+        }
+
+        .equipment-cost {
+            color: #FF9800;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .equipment-effect {
+            font-size: 11px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .achievement-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .event-card {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .event-card.positive {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .event-card.negative {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .defeso-warning {
+            background: #FFF3CD;
+            border: 2px solid #FFC107;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .energy-bar {
+            background: #ddd;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF5722, #FF9800);
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .game-screen {
+                height: 300px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🐟 Pesca Sustentável - Piúma ES 🌊</h1>
+            <p>Gerencie sua pesca, preserve o mar e desbloqueie conquistas!</p>
+        </div>
+
+        <div class="main-content">
+            <div class="game-section">
+                <div class="game-screen" id="gameScreen">
+                    <div class="weather-indicator" id="weatherIcon">☀️</div>
+                    <div class="clouds">
+                        <div class="cloud cloud1"></div>
+                        <div class="cloud cloud2"></div>
+                    </div>
+                    
+                    <div class="boat" id="boat">
+                        <div class="boat-cabin"></div>
+                        <div class="boat-body"></div>
+                    </div>
+
+                    <div class="waves"></div>
+                    <div class="message" id="message"></div>
+                </div>
+
+                <div class="controls">
+                    <div id="defesoWarning" class="defeso-warning" style="display: none;">
+                        <h3>⚠️ PERÍODO DE DEFESO ⚠️</h3>
+                        <p>A pesca está proibida para reprodução dos peixes!</p>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat-box">
+                            <div class="stat-label">Dia</div>
+                            <div class="stat-value" id="day">1</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Moedas</div>
+                            <div class="stat-value" id="coins">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Energia</div>
+                            <div class="stat-value" id="energy">100%</div>
+                            <div class="energy-bar">
+                                <div class="energy-fill" id="energyBar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">População</div>
+                            <div class="stat-value" id="population">100%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="popBar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-fish" id="fishBtn" onclick="startFishing()">🎣 Pescar</button>
+                        <button class="btn-next" onclick="nextDay()">➡️ Próximo</button>
+                    </div>
+
+                    <div class="buttons full">
+                        <button class="btn-equipment" onclick="showEquipment()">🛠️ Equipamento</button>
+                    </div>
+
+                    <div class="buttons full">
+                        <button class="btn-stats" onclick="showStats()">📊 Estatísticas</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h4>📈 Espécies</h4>
+                    <div class="stat-small">
+                        <span>🐟 Robalo</span>
+                        <span id="count-robalo">0</span>
+                    </div>
+                    <div class="stat-small">
+                        <span>🐠 Tainha</span>
+                        <span id="count-tainha">0</span>
+                    </div>
+                    <div class="stat-small">
+                        <span>🦈 Sardinha</span>
+                        <span id="count-sardinha">0</span>
+                    </div>
+                    <div class="stat-small">
+                        <span>⭐ Raro</span>
+                        <span id="count-raro">0</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h4>⚙️ Equipamento Atual</h4>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; margin: 5px 0;" id="currentEquipment">🎣</div>
+                        <div style="font-size: 11px; color: #666;" id="equipmentBonus">Padrão</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h4>🏆 Dificuldade</h4>
+                    <div class="stat-small">
+                        <span>Nível</span>
+                        <span id="diffLevel">1</span>
+                    </div>
+                    <div class="stat-small">
+                        <span>Clima</span>
+                        <span id="weatherText">Bom</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h4>🎯 Eventos</h4>
+                    <div id="eventsList" style="font-size: 11px;">Nenhum evento</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="tutorialModal" style="display: flex;">
+        <div class="modal-content">
+            <button class="close-btn" onclick="startGame()">×</button>
+            
+            <h2>🌊 Bem-vindo à Pesca Sustentável de Piúma-ES! 🐟</h2>
+            
+            <div class="read-content">
+                <div class="eco-message">
+                    <h3>🌍 Por que a Pesca Sustentável é Importante?</h3>
+                    <p>A pesca sustentável garante que futuras gerações desfrutem dos recursos marinhos. Piúma-ES possui biodiversidade marinha única que precisa ser preservada! Cada decisão sua impacta o ecossistema.</p>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3>🎮 Mecânicas do Jogo:</h3>
+                    <p><strong>Pesca:</strong> Clique em "Pescar" para ativar modo de captura, depois clique nos peixes. Cada espécie rende moedas diferentes.</p>
+                    <p><strong>Moedas:</strong> Use para comprar equipamentos que melhoram sua eficiência e ganhos.</p>
+                    <p><strong>Energia:</strong> Pescadores ficam cansados! Dia sem pesca = energia recuperada (+20%).</p>
+                    <p><strong>Equipamento:</strong> Anzóis, redes e iscas melhoram ganhos e capturas. Alguns atraem espécies raras!</p>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3>🐟 Espécies de Piúma:</h3>
+                    <p>🐟 <strong>Robalo:</strong> Comum, 10 moedas, 1 ponto (espécie nativa).</p>
+                    <p>🐠 <strong>Tainha:</strong> Comum, 15 moedas, 1 ponto (importante para comunidade).</p>
+                    <p>🦈 <strong>Sardinha:</strong> Abundante, 5 moedas, 1 ponto (base da cadeia alimentar).</p>
+                    <p>⭐ <strong>Raro:</strong> Especial, 50 moedas, 3 pontos (pode pedir períodos específicos).</p>
+                </div>
+
+                <div class="tutorial-section">
+                    <h3>⚠️ Regras e Desafios:</h3>
+                    <p><strong>Defeso:</strong> A cada 7 dias, pesca bloqueada por reprodução. População +15% nestes dias!</p>
+                    <p><strong>Clima:</strong> Tempestades reduzem peixes visíveis e aumentam dificuldade.</p>
+                    <p><strong>Poluição:</strong> Eventos aleatórios danificam o ecossistema.</p>
+                    <p><strong>Objetivo:</strong> 30 dias com população >50% = vitória!</p>
+                </div>
+
+                <div class="eco-message">
+                    <h3>💚 Sua Jornada Começa Agora</h3>
+                    <p>Gerencie recursos, pesquise sustentavelmente, desbloqueie equipamentos e conquistas. Seja o guardião dos oceanos de Piúma!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="statsModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <h2>📊 Estatísticas</h2>
+            <div id="statsContent" style="font-size: 14px; line-height: 1.8;"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="equipmentModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <h2>🛠️ Equipamento de Pesca</h2>
+            <p style="margin-bottom: 15px; font-size: 14px;">Compre equipamentos para melhorar seus ganhos e capacidades! Você tem <strong id="coinDisplay">0</strong> moedas.</p>
+            <div id="equipmentGrid" class="equipment-grid"></div>
+            <div id="equipmentInfo" style="background: #f0f8ff; border-left: 4px solid #2196F3; padding: 12px; margin-top: 15px; border-radius: 5px; font-size: 13px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const gameState = {
+            day: 1,
+            coins: 0,
+            energy: 100,
+            population: 100,
+            sustainability: 100,
+            isDefeso: false,
+            maxPerDay: 5,
+            fishingMode: false,
+            gameStarted: false,
+            gameOver: false,
+            difficulty: 1,
+            weather: 'bom',
+            equipmentBonus: 1,
+            currentEquipment: 'anzol-basico',
+            caught: { robalo: 0, tainha: 0, sardinha: 0, raro: 0 },
+            events: [],
+            achievements: [],
+            speciesCaught: { robalo: 0, tainha: 0, sardinha: 0, raro: 0 }
+        };
+
+        const equipment = {
+            'anzol-basico': {
+                name: 'Anzol Básico',
+                icon: '🎣',
+                cost: 0,
+                bonus: 1,
+                effect: 'Captura padrão',
+                owned: true
+            },
+            'anzol-melhorado': {
+                name: 'Anzol Melhorado',
+                icon: '🪝',
+                cost: 100,
+                bonus: 1.3,
+                effect: '+30% ganhos'
+            },
+            'rede-tradicional': {
+                name: 'Rede Tradicional',
+                icon: '🧵',
+                cost: 150,
+                bonus: 1.5,
+                effect: '+50% ganhos, 2 peixes por clique'
+            },
+            'isca-premium': {
+                name: 'Isca Premium',
+                icon: '🪱',
+                cost: 200,
+                bonus: 2,
+                effect: '+100% ganhos, 50% mais raros'
+            },
+            'barco-melhorado': {
+                name: 'Barco Melhorado',
+                icon: '⛵',
+                cost: 300,
+                bonus: 1.2,
+                effect: '+20% ganhos, -20% energia'
+            }
+        };
+
+        function showMessage(text) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 2000);
+        }
+
+        function addEvent(text, type = 'neutral') {
+            gameState.events.push({ text, type });
+            if (gameState.events.length > 5) gameState.events.shift();
+            updateEventsList();
+        }
+
+        function updateEventsList() {
+            const list = document.getElementById('eventsList');
+            if (gameState.events.length === 0) {
+                list.innerHTML = 'Nenhum evento';
+            } else {
+                list.innerHTML = gameState.events.map((e, i) => 
+                    `<div class="event-card ${e.type}" style="margin: 3px 0; padding: 5px;">${e.text}</div>`
+                ).join('');
+            }
+        }
+
+        function spawnFish() {
+            const gameScreen = document.getElementById('gameScreen');
+            gameState.activeFish = gameState.activeFish || [];
+            gameState.activeFish.forEach(fish => fish.remove());
+            gameState.activeFish = [];
+            
+            const fishCount = Math.max(3, Math.floor(gameState.population / 15));
+            const species = ['robalo', 'tainha', 'sardinha'];
+            
+            for (let i = 0; i < fishCount; i++) {
+                const type = Math.random() < 0.2 ? 'raro' : species[Math.floor(Math.random() * 3)];
+                const fish = document.createElement('div');
+                fish.className = 'fish';
+                fish.classList.add(Math.random() < 0.5 ? 'moving-left' : 'moving-right');
+                if (Math.random() < 0.1) fish.classList.add('fast');
+                if (type === 'raro') fish.classList.add('rare');
+                
+                const icons = { robalo: '🐟', tainha: '🐠', sardinha: '🦈', raro: '⭐' };
+                fish.innerHTML = icons[type];
+                fish.dataset.type = type;
+                fish.style.fontSize = (type === 'raro' ? 35 : 30) + 'px';
+                fish.style.left = Math.random() * (gameScreen.clientWidth - 60) + 'px';
+                fish.style.bottom = Math.random() * 100 + 50 + 'px';
+                fish.style.animationDuration = (3 / gameState.difficulty) + 's';
+                fish.style.animationDelay = Math.random() * 2 + 's';
+                fish.onclick = () => catchFish(fish);
+                
+                gameScreen.appendChild(fish);
+                gameState.activeFish.push(fish);
+                
+                setTimeout(() => {
+                    if (fish.parentNode && !fish.classList.contains('fish-caught')) {
+                        fish.remove();
+                        gameState.activeFish = gameState.activeFish.filter(f => f !== fish);
+                        if (gameState.gameStarted && !gameState.isDefeso && !gameState.gameOver) {
+                            const newFish = createSingleFish();
+                            if (newFish) gameScreen.appendChild(newFish);
+                        }
+                    }
+                }, 5000 + Math.random() * 4000);
+            }
+        }
+
+        function createSingleFish() {
+            const species = ['robalo', 'tainha', 'sardinha'];
+            const type = Math.random() < 0.2 ? 'raro' : species[Math.floor(Math.random() * 3)];
+            const fish = document.createElement('div');
+            fish.className = 'fish';
+            fish.classList.add(Math.random() < 0.5 ? 'moving-left' : 'moving-right');
+            if (Math.random() < 0.1) fish.classList.add('fast');
+            if (type === 'raro') fish.classList.add('rare');
+            
+            const icons = { robalo: '🐟', tainha: '🐠', sardinha: '🦈', raro: '⭐' };
+            fish.innerHTML = icons[type];
+            fish.dataset.type = type;
+            fish.style.fontSize = (type === 'raro' ? 35 : 30) + 'px';
+            fish.style.left = Math.random() * (window.innerWidth - 60) + 'px';
+            fish.style.bottom = Math.random() * 100 + 50 + 'px';
+            fish.style.animationDuration = (3 / gameState.difficulty) + 's';
+            fish.style.animationDelay = Math.random() * 2 + 's';
+            fish.onclick = () => catchFish(fish);
+            return fish;
+        }
+
+        function catchFish(fishElement) {
+            if (!gameState.fishingMode || gameState.gameOver || gameState.isDefeso) return;
+            if (gameState.energy <= 0) {
+                showMessage('😴 Muito cansado! Descanse um dia.');
+                return;
+            }
+
+            const type = fishElement.dataset.type;
+            const values = { robalo: 10, tainha: 15, sardinha: 5, raro: 50 };
+            const gained = Math.floor(values[type] * gameState.equipmentBonus);
+            
+            fishElement.classList.add('fish-caught');
+            gameState.coins += gained;
+            gameState.energy -= 15;
+            gameState.speciesCaught[type]++;
+            gameState.caught[type]++;
+            
+            showMessage(`+${gained} 💰 ${type.toUpperCase()}`);
+            updateStats();
+            
+            setTimeout(() => fishElement.remove(), 500);
+        }
+
+        function startFishing() {
+            if (gameState.gameOver || gameState.isDefeso) {
+                showMessage('⚠️ Não é possível pescar agora!');
+                return;
+            }
+
+            gameState.fishingMode = !gameState.fishingMode;
+            const btn = document.getElementById('fishBtn');
+            if (gameState.fishingMode) {
+                btn.textContent = '⏸️ Pausar';
+                btn.style.background = 'linear-gradient(135deg, #FF9800, #F57C00)';
+                showMessage('🎣 Modo de pesca ativado!');
+            } else {
+                btn.textContent = '🎣 Pescar';
+                btn.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+            }
+        }
+
+        function buyEquipment(equipId) {
+            const eq = equipment[equipId];
+            if (gameState.coins >= eq.cost) {
+                gameState.coins -= eq.cost;
+                gameState.currentEquipment = equipId;
+                gameState.equipmentBonus = eq.bonus;
+                equipment[equipId].owned = true;
+                showMessage(`✅ ${eq.name} adquirido!`);
+                updateStats();
+                showEquipment();
+            } else {
+                showMessage('❌ Moedas insuficientes!');
+            }
+        }
+
+        function showEquipment() {
+            document.getElementById('statsModal').style.display = 'none';
+            document.getElementById('equipmentModal').style.display = 'flex';
+            
+            const grid = document.getElementById('equipmentGrid');
+            const info = document.getElementById('equipmentInfo');
+            const current = equipment[gameState.currentEquipment];
+            
+            grid.innerHTML = Object.entries(equipment).map(([id, eq]) => `
+                <div class="equipment-card ${id === gameState.currentEquipment ? 'equipped' : ''}" onclick="buyEquipment('${id}')">
+                    <div class="equipment-icon">${eq.icon}</div>
+                    <div class="equipment-name">${eq.name}</div>
+                    <div class="equipment-cost">${eq.owned ? '✓ Adquirido' : eq.cost + ' 💰'}</div>
+                    <div class="equipment-effect">${eq.effect}</div>
+                </div>
+            `).join('');
+            
+            info.innerHTML = `<strong>Equipamento atual:</strong> ${current.name} - ${current.effect}`;
+        }
+
+        function nextDay() {
+            if (gameState.gameOver) return;
+
+            gameState.fishingMode = false;
+            document.getElementById('fishBtn').textContent = '🎣 Pescar';
+            document.getElementById('fishBtn').style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+
+            gameState.day++;
+            
+            // Recuperar energia se não pescou
+            if (gameState.caught.robalo === 0 && gameState.caught.tainha === 0 && gameState.caught.sardinha === 0) {
+                gameState.energy = Math.min(100, gameState.energy + 20);
+                showMessage('😴 Descansado! Energia recuperada +20%');
+            } else {
+                gameState.energy = Math.max(0, gameState.energy - 10);
+            }
+
+            gameState.caught = { robalo: 0, tainha: 0, sardinha: 0, raro: 0 };
+            gameState.difficulty = Math.floor(gameState.day / 5) + 1;
+
+            // Clima aleatório
+            const weatherRoll = Math.random();
+            if (weatherRoll < 0.6) {
+                gameState.weather = 'bom';
+                document.getElementById('weatherIcon').textContent = '☀️';
+            } else if (weatherRoll < 0.85) {
+                gameState.weather = 'nublado';
+                document.getElementById('weatherIcon').textContent = '⛅';
+            } else {
+                gameState.weather = 'tempestade';
+                document.getElementById('weatherIcon').textContent = '⛈️';
+                gameState.population = Math.max(20, gameState.population - 10);
+                addEvent('⛈️ Tempestade reduz população!', 'negative');
+            }
+
+            // Defeso
+            gameState.isDefeso = gameState.day % 7 === 0;
+            if (gameState.isDefeso) {
+                gameState.population = Math.min(100, gameState.population + 15);
+                document.getElementById('defesoWarning').style.display = 'block';
+                document.getElementById('fishBtn').disabled = true;
+                addEvent('🛑 Período de Defeso ativado!', 'positive');
+            } else {
+                document.getElementById('defesoWarning').style.display = 'none';
+                document.getElementById('fishBtn').disabled = false;
+            }
+
+            // Eventos aleatórios
+            if (Math.random() < 0.15) {
+                const eventos = [
+                    { text: '🐬 Golfinhos ajudam! +10% população', type: 'positive', effect: () => gameState.population += 10 },
+                    { text: '🌊 Poluição detectada! -15% população', type: 'negative', effect: () => gameState.population -= 15 },
+                    { text: '🦈 Tubarão visitante! Peixes fogem -20%', type: 'negative', effect: () => gameState.population -= 20 }
+                ];
+                const evento = eventos[Math.floor(Math.random() * eventos.length)];
+                evento.effect();
+                addEvent(evento.text, evento.type);
+            }
+
+            gameState.population = Math.max(0, Math.min(100, gameState.population));
+
+            if (gameState.population <= 10) {
+                gameOver();
+                return;
+            }
+
+            spawnFish();
+            updateStats();
+
+            if (gameState.day > 30) {
+                endSeason();
+            }
+        }
+
+        function gameOver() {
+            gameState.gameOver = true;
+            gameState.fishingMode = false;
+            document.getElementById('fishBtn').disabled = true;
+            
+            const content = document.getElementById('statsContent');
+            content.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h2 style="color: #F44336; font-size: 28px; margin-bottom: 20px;">💀 JOGO FINALIZADO!</h2>
+                    <p>População marinha crítica: ${Math.round(gameState.population)}%</p>
+                    <p>Total obtido: ${gameState.coins} 💰</p>
+                    <button onclick="restartGame()" style="margin-top: 20px; width: 100%; background: #4CAF50; padding: 15px; border: none; border-radius: 10px; color: white; cursor: pointer;">
+                        🔄 Tentar Novamente
+                    </button>
+                </div>
+            `;
+            document.getElementById('statsModal').style.display = 'flex';
+        }
+
+        function endSeason() {
+            const content = document.getElementById('statsContent');
+            const won = gameState.population >= 50;
+            
+            content.innerHTML = `
+                <h2 style="color: ${won ? '#4CAF50' : '#FF9800'};">
+                    ${won ? '🌟 VITÓRIA! 🌟' : '⚠️ FIM DA TEMPORADA'}
+                </h2>
+                <p>Dia: ${gameState.day} | Total: ${gameState.coins} 💰</p>
+                <p>Robalo: ${gameState.speciesCaught.robalo} | Tainha: ${gameState.speciesCaught.tainha}</p>
+                <p>Sardinha: ${gameState.speciesCaught.sardinha} | Raros: ${gameState.speciesCaught.raro}</p>
+                <p>População Final: ${Math.round(gameState.population)}%</p>
+                <button onclick="restartGame()" style="margin-top: 20px; width: 100%; background: #4CAF50; padding: 15px; border: none; border-radius: 10px; color: white; cursor: pointer;">
+                    🔄 Jogar Novamente
+                </button>
+            `;
+            document.getElementById('statsModal').style.display = 'flex';
+        }
+
+        function showStats() {
+            document.getElementById('equipmentModal').style.display = 'none';
+            const content = document.getElementById('statsContent');
+            
+            content.innerHTML = `
+                <p><strong>Dia:</strong> ${gameState.day}/30</p>
+                <p><strong>Moedas:</strong> ${gameState.coins} 💰</p>
+                <p><strong>Energia:</strong> ${gameState.energy}%</p>
+                <p><strong>População:</strong> ${Math.round(gameState.population)}%</p>
+                <p><strong>Clima:</strong> ${gameState.weather}</p>
+                <p><strong>Dificuldade:</strong> Nível ${gameState.difficulty}</p>
+                <hr>
+                <p><strong>Espécies Capturadas:</strong></p>
+                <p>🐟 Robalo: ${gameState.speciesCaught.robalo}</p>
+                <p>🐠 Tainha: ${gameState.speciesCaught.tainha}</p>
+                <p>🦈 Sardinha: ${gameState.speciesCaught.sardinha}</p>
+                <p>⭐ Raros: ${gameState.speciesCaught.raro}</p>
+            `;
+            document.getElementById('statsModal').style.display = 'flex';
+        }
+
+        function updateStats() {
+            document.getElementById('day').textContent = gameState.day;
+            document.getElementById('coins').textContent = gameState.coins;
+            document.getElementById('energy').textContent = gameState.energy + '%';
+            document.getElementById('population').textContent = Math.round(gameState.population) + '%';
+            document.getElementById('energyBar').style.width = gameState.energy + '%';
+            document.getElementById('popBar').style.width = gameState.population + '%';
+            document.getElementById('diffLevel').textContent = gameState.difficulty;
+            document.getElementById('weatherText').textContent = gameState.weather === 'bom' ? '☀️ Bom' : gameState.weather === 'nublado' ? '⛅ Nublado' : '⛈️ Tempestade';
+            
+            const eq = equipment[gameState.currentEquipment];
+            document.getElementById('currentEquipment').textContent = eq.icon;
+            document.getElementById('equipmentBonus').textContent = eq.name;
+            document.getElementById('coinDisplay').textContent = gameState.coins;
+            
+            // Atualizar contador de espécies
+            document.getElementById('count-robalo').textContent = gameState.speciesCaught.robalo;
+            document.getElementById('count-tainha').textContent = gameState.speciesCaught.tainha;
+            document.getElementById('count-sardinha').textContent = gameState.speciesCaught.sardinha;
+            document.getElementById('count-raro').textContent = gameState.speciesCaught.raro;
+            
+            // Atualizar cores de alerta
+            const popBar = document.getElementById('popBar');
+            popBar.className = 'progress-fill';
+            if (gameState.population < 30) popBar.classList.add('danger');
+            else if (gameState.population < 60) popBar.classList.add('warning');
+        }
+
+        function closeModal() {
+            document.getElementById('statsModal').style.display = 'none';
+            document.getElementById('equipmentModal').style.display = 'none';
+        }
+
+        function restartGame() {
+            gameState.day = 1;
+            gameState.coins = 0;
+            gameState.energy = 100;
+            gameState.population = 100;
+            gameState.sustainability = 100;
+            gameState.isDefeso = false;
+            gameState.difficulty = 1;
+            gameState.weather = 'bom';
+            gameState.equipmentBonus = 1;
+            gameState.currentEquipment = 'anzol-basico';
+            gameState.caught = { robalo: 0, tainha: 0, sardinha: 0, raro: 0 };
+            gameState.events = [];
+            gameState.speciesCaught = { robalo: 0, tainha: 0, sardinha: 0, raro: 0 };
+            gameState.gameStarted = true;
+            gameState.gameOver = false;
+            
+            document.getElementById('defesoWarning').style.display = 'none';
+            document.getElementById('fishBtn').disabled = false;
+            document.getElementById('fishBtn').textContent = '🎣 Pescar';
+            document.getElementById('weatherIcon').textContent = '☀️';
+            
+            closeModal();
+            spawnFish();
+            updateStats();
+            showMessage('🔄 Novo jogo iniciado!');
+        }
+
+        function startGame() {
+            document.getElementById('tutorialModal').style.display = 'none';
+            gameState.gameStarted = true;
+            spawnFish();
+            updateStats();
+        }
+
+        updateStats();
+    </script>
+</body>
+</html>

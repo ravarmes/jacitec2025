@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JACITEC 2025 – Planeta Água: Cultura Oceânica</title>
+  <meta name="description"
+    content="Apresentação dos 21 jogos desenvolvidos pela disciplina Programação 1 para a JACITEC 2025." />
+  <style>
+    :root {
+      --bg: #0f172a;
+      /* slate-900 */
+      --card: #111827;
+      /* gray-900 */
+      --text: #e5e7eb;
+      /* gray-200 */
+      --muted: #9ca3af;
+      /* gray-400 */
+      --accent: #22d3ee;
+      /* cyan-400 */
+      --accent-2: #60a5fa;
+      /* blue-400 */
+      --border: #1f2937;
+      /* gray-800 */
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 10% 0%, #0b1222 0%, var(--bg) 50%, #0b1222 100%);
+      color: var(--text);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.8);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #082f49;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 80px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: 0.2px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    @media (min-width: 640px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 960px) {
+      .grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.85), rgba(11, 18, 34, 0.85));
+    }
+
+    .card-media {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-bottom: 1px solid var(--border);
+      background: #0b1222;
+    }
+
+    .card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+    }
+
+    .card-body {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+    }
+
+    .team-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #0b1222;
+    }
+
+    .team-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+    }
+
+    footer {
+      max-width: 1100px;
+      margin: 36px auto;
+      padding: 0 20px 40px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .event-link {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .event-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Banner superior responsivo */
+    .banner {
+      width: 100%;
+      border-bottom: 1px solid var(--border);
+      background: #0b1222;
+    }
+
+    .banner-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .banner-inner img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Carrossel de capas */
+    .carousel {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 12px 20px 0;
+    }
+
+    .carousel-viewport {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #0b1222;
+    }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 0.6s ease;
+    }
+
+    .carousel-slide {
+      flex: 0 0 100%;
+      aspect-ratio: 16 / 9;
+    }
+
+    @media (min-width: 640px) {
+      .carousel-slide {
+        flex: 0 0 50%;
+      }
+    }
+
+    @media (min-width: 960px) {
+      .carousel-slide {
+        flex: 0 0 33.3333%;
+      }
+    }
+
+    .carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+    }
+
+    .carousel-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.4);
+      color: #fff;
+      border: none;
+      padding: 6px 8px;
+      font-size: 20px;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .carousel-control:hover {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .carousel-control.prev {
+      left: 10px;
+    }
+
+    .carousel-control.next {
+      right: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="banner" aria-hidden="false">
+    <div class="banner-inner">
+      <img src="./jogos/banner.png"
+        alt="XIV JACITEC — Planeta Água: Cultura oceânica para enfrentar as mudanças climáticas no meu território" />
+    </div>
+  </div>
+  <header>
+
+    <section class="carousel" aria-label="Capas dos jogos">
+      <div class="carousel-viewport">
+        <button class="carousel-control prev" id="carousel-prev" aria-label="Anterior">‹</button>
+        <div class="carousel-track" id="carousel-track"></div>
+        <button class="carousel-control next" id="carousel-next" aria-label="Próximo">›</button>
+      </div>
+    </section>
+
+    <nav class="nav" aria-label="Navegação principal">
+      <a class="logo" href="#" aria-label="Página inicial JACITEC 2025">
+        <span class="logo-badge" aria-hidden="true">JA</span>
+        <div>
+          <strong>JACITEC 2025</strong><br />
+          <span class="subtitle">Inteligência Artificial e Programação na Concepção de Jogos Educativos para o Planeta
+            Água</span>
+        </div>
+      </a>
+    </nav>
+  </header>
+
+  <main>
+
+    <p>
+      Esta página reúne 20 jogos criados na disciplina de Programação 1, inspirados no tema da JACITEC 2025. 
+      Cada trabalho traz a imagem do jogo, dos integrantes (mangá), o título e a temática central.
+    </p>
+
+    <section class="hero" aria-labelledby="titulo">
+      <hr>
+    </section>
+
+    <section>
+      <div class="grid" id="projects-grid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      Site oficial do evento: <a class="event-link" href="https://jacitec.cachoeiro.ifes.edu.br/" target="_blank"
+        rel="noopener noreferrer">jacitec.cachoeiro.ifes.edu.br</a>
+    </p>
+  </footer>
+
+  <script>
+    // Lista de subtemas dos 20 jogos (associados corretamente aos títulos)
+    const subThemes = [
+      "Poluição Marinha e Lixo nas Praias Capixabas", // Tartaruga Capixaba
+      "Recuperação dos Corais de Guarapari", // Meu Coral
+      "Recuperação dos Corais de Guarapari", // Guardiões dos Corais
+      "Pesca Sustentável no Litoral de Piúma", // Anzol do Amanhã
+      "Conservação das Nascentes da Serra do Caparaó", // Guardião das Nascentes do Caparaó
+      "Impactos da Lama de Mariana no Litoral do ES", // Missão Mariana
+      "A Importância da Restinga e da Vegetação de Praia", // O mistério da restinga
+      "Energia Eólica e Sustentabilidade no Litoral Capixaba", // Turbinas do Litoral
+      "Educação Ambiental nas Escolas Capixabas", // Guardiões da Água
+      "Falésias em Marataízes: Desgaste e Avanço do Mar", // Guardião da Falésia
+      "Falésias em Marataízes: Desgaste e Avanço do Mar", // SandBox Falésias
+      "Avanço do Mar e Inundação das Praias do Sul do Estado", // Defenda o Litoral Capixaba
+      "Avanço do Mar e Inundação das Praias do Sul do Estado", // Guardiões do Litoral Sul-Capixaba
+      "Reflorestamento e Recuperação de Matas Ciliares", // Refloreste as matas ciliares
+      "Preservação do Rio Itapemirim", // Rio Itapemirim - Salvando as águas
+      "Áreas de Proteção Ambiental (APAs) do ES e sua Importância", // Lobo Guará: Salvando o Cerrado
+      "Queimadas Urbanas e Rurais", // Labifire ES
+      "Tratamento de Água e Esgoto nos Municípios Capixabas", // Guardiões da Água Capixaba
+      "Descarte Correto de Resíduos e Reciclagem em Cachoeiro de Itapemirim", // Cachoeiro Sustentável
+      "Mudanças Climáticas e Segurança Alimentar nas Comunidades Costeiras", // Proteção da Costa
+    ];
+
+    // Helper para obter o número base do subtema a partir do id (ex: "03-1" -> 3)
+    function getBaseIdNumber(id) {
+      const m = String(id).match(/^\d+/);
+      return m ? parseInt(m[0], 10) : null;
+    }
+
+    // Lista REAL de projetos com base na pasta jogos, incluindo itens sem HTML (com link externo)
+    const baseProjects = [
+      // Com HTML local
+      { id: '01', gameImg: './jogos/01-capa.png', teamImg: './jogos/01-dupla.png', docUrl: './jogos/01.pdf', gameUrl: './jogos/01.html' },
+      { id: '03-1', gameImg: './jogos/03-1-capa.png', teamImg: './jogos/03-1-dupla.png', docUrl: './jogos/03-1.pdf', gameUrl: './jogos/03-1.html' },
+      { id: '03-2', gameImg: './jogos/03-02-capa.png', teamImg: './jogos/03-02-dupla.png', docUrl: './jogos/03-2.pdf', gameUrl: 'https://claude.ai/public/artifacts/724ab7f8-c7a7-46a8-aa8d-2a494b793a86' },
+      { id: '04', gameImg: './jogos/04-capa.png', teamImg: './jogos/04-dupla.jpeg', docUrl: './jogos/04.pdf', gameUrl: './jogos/04.html' },
+      { id: '05', gameImg: './jogos/05-capa.jpg', teamImg: './jogos/05-dupla.png', docUrl: './jogos/05.pdf', gameUrl: './jogos/05.html' },
+      { id: '07', gameImg: './jogos/07-capa.png', teamImg: './jogos/07-dupla.png', docUrl: './jogos/07.pdf', gameUrl: 'https://claude.ai/public/artifacts/f18cbc7f-c4c0-4f0a-9fb9-4bff0b078700' },
+      { id: '09', gameImg: './jogos/09-capa.png', teamImg: './jogos/09-dupla.png', docUrl: './jogos/09.pdf', gameUrl: './jogos/09.html' },
+      { id: '10', gameImg: './jogos/10-capa.png', teamImg: './jogos/10-dupla.png', docUrl: './jogos/10.pdf', gameUrl: './jogos/10.html' },
+      { id: '12', gameImg: './jogos/12-capa.png', teamImg: './jogos/12-dupla.jpg', docUrl: './jogos/12.pdf', gameUrl: './jogos/12.html' },
+      { id: '13-1', gameImg: './jogos/13-1-capa.png', teamImg: './jogos/13-1-dupla.png', docUrl: './jogos/13-1.pdf', gameUrl: 'https://claude.ai/public/artifacts/c52dad3e-38e1-4d49-93c4-ba7989bf37c1' },
+      { id: '13-2', gameImg: './jogos/13-2-capa.png', teamImg: './jogos/13-2-dupla.jpg', docUrl: './jogos/13-2.pdf', gameUrl: './jogos/13-2.html' },
+      { id: '14-1', gameImg: './jogos/14-1-capa.png', teamImg: './jogos/14-1-dupla.png', docUrl: './jogos/14-1.pdf', gameUrl: './jogos/14-1.html' },
+      { id: '14-2', gameImg: './jogos/14-2-capa.png', teamImg: './jogos/14-2-dupla.jpg', docUrl: './jogos/14-2.pdf', gameUrl: './jogos/14-2.html' },
+      { id: '16', gameImg: './jogos/16-capa.png', teamImg: './jogos/16-dupla.png', docUrl: './jogos/16.pdf', gameUrl: './jogos/16.html' },
+      { id: '17', gameImg: './jogos/17-capa.png', teamImg: './jogos/17-dupla.png', docUrl: './jogos/17.pdf', gameUrl: 'https://claude.ai/public/artifacts/6e301ea6-c0d8-4812-91a8-e0d9888a0d20' },
+      { id: '18-1', gameImg: './jogos/18-1-capa.png', teamImg: './jogos/18-1-dupla.png', docUrl: './jogos/18-1.pdf', gameUrl: './jogos/18-1.html' },
+      { id: '18-2', gameImg: './jogos/18-2-capa.jpg', teamImg: './jogos/18-2-foto.jpg', docUrl: './jogos/18-2.pdf', gameUrl: './jogos/18-2.html' },
+      { id: '19', gameImg: './jogos/19-capa.jpg', teamImg: './jogos/19-dupla.jpg', docUrl: './jogos/19.pdf', gameUrl: './jogos/19.html' },
+      { id: '20', gameImg: './jogos/20-capa.png', teamImg: './jogos/20-dupla.jpg', docUrl: './jogos/20.pdf', gameUrl: './jogos/20.html' },
+      { id: '21', gameImg: './jogos/21-capa.png', teamImg: './jogos/21-dupla.png', docUrl: './jogos/21.pdf', gameUrl: 'https://claude.ai/public/artifacts/e419d603-a4d3-4a1e-abc4-da08ffd2ce90' },
+    ];
+
+    // Títulos desejados (na ordem de exibição)
+    const titles = [
+      'Tartaruga Capixaba',
+      'Meu Coral',
+      'Guardiões dos Corais',
+      'Anzol do Amanhã',
+      'Guardião das Nascentes do Caparaó',
+      'Missão Mariana',
+      'O mistério da restinga',
+      'Turbinas do Litoral',
+      'Guardiões da Água',
+      'Guardião da Falésia',
+      'SandBox Falésias',
+      'Defenda o Litoral Capixaba',
+      'Guardiões do Litoral Sul-Capixaba',
+      'Refloreste as matas ciliares',
+      'Rio Itapemirim - Salvando as águas',
+      'Lobo Guará: Salvando o Cerrado',
+      'Labifire ES',
+      'Guardiões da Água Capixaba',
+      'Cachoeiro Sustentável',
+      'Proteção da Costa',
+    ];
+
+    // Integrantes por projeto (na mesma ordem dos títulos)
+    const teams = [
+      'Gabriel Werneck e Tammy Guedes',
+      'Ana Mesquita e João Palacio',
+      'Laura Barbosa e Lívia Pezzin',
+      'Lucas Louzada e Jhosephy Almeida',
+      'Isabela Fassarella e Joana Oliveira',
+      'Amanda Cassiano e Arielly Sarte',
+      'Lívia Vieira',
+      'Caio Lara e Gabriel Ramos',
+      'Miguel Berçoti e Julia Oliveira',
+      'Alessandra Bravo e Camille Batista',
+      'Marjory Novato e Pedro Gomes',
+      'Elisa Calvi Cabral e Flávia Martins',
+      'Lucas Heckert e Mikaela Cantalejo',
+      'Gabriel Pereira e Victor Emanuel',
+      'Isabela Machado e Laryssa Ribeiro',
+      'Pedro Vitor e Rodrigo Alledi',
+      'Murilo Batista e João Barcelos',
+      'Arthur Barbosa e Henry Soares',
+      'Carlos Veghini e Kaylla Freitas',
+      'Arthur Polonine e Mateus Motté',
+    ];
+
+    // Ordena por ID original (considerando sufixo) e aplica IDs sequenciais + títulos
+    const projects = baseProjects
+      .sort((a, b) => {
+        const parse = (id) => {
+          const parts = String(id).split('-');
+          const base = parseInt(parts[0], 10);
+          const sub = parts[1] ? parseInt(parts[1], 10) : 0;
+          return [base, sub];
+        };
+        const [ba, sa] = parse(a.id);
+        const [bb, sb] = parse(b.id);
+        if (ba !== bb) return ba - bb;
+        return sa - sb;
+      })
+      .map((p, idx) => ({
+        ...p,
+        id: String(idx + 1),
+        title: titles[idx],
+        team: `Equipe: ${teams[idx]}`,
+        theme: subThemes[idx] ?? 'Tema a definir',
+      }));
+
+    // Carrossel de capas - montagem e controles
+    const track = document.getElementById('carousel-track');
+    const prevBtn = document.getElementById('carousel-prev');
+    const nextBtn = document.getElementById('carousel-next');
+    function getVisibleCount() {
+      const w = window.innerWidth;
+      if (w >= 960) return 3;
+      if (w >= 640) return 2;
+      return 1;
+    }
+    if (track) {
+      const slides = projects.map(p => ({ img: p.gameImg, url: p.gameUrl, id: p.id }));
+      slides.forEach(s => {
+        const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
+        const a = document.createElement('a');
+        a.href = s.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.setAttribute('aria-label', `Abrir jogo ${s.id}`);
+        const img = document.createElement('img');
+        img.src = s.img;
+        img.alt = `Capa do jogo ${s.id}`;
+        a.appendChild(img);
+        slide.appendChild(a);
+        track.appendChild(slide);
+      });
+      let currentIndex = 0;
+      let visibleCount = getVisibleCount();
+      const maxIndex = () => Math.max(0, slides.length - visibleCount);
+      const slidePercent = () => 100 / visibleCount;
+      const updateTransform = () => { track.style.transform = `translateX(-${currentIndex * slidePercent()}%)`; };
+      const goToIndex = (i) => {
+        const max = maxIndex();
+        if (i > max) { currentIndex = 0; }
+        else if (i < 0) { currentIndex = max; }
+        else { currentIndex = i; }
+        updateTransform();
+      };
+      goToIndex(0);
+      prevBtn && prevBtn.addEventListener('click', () => goToIndex(currentIndex - 1));
+      nextBtn && nextBtn.addEventListener('click', () => goToIndex(currentIndex + 1));
+      let timer = setInterval(() => goToIndex(currentIndex + 1), 4000);
+      const viewport = document.querySelector('.carousel-viewport');
+      viewport && viewport.addEventListener('mouseenter', () => { clearInterval(timer); });
+      viewport && viewport.addEventListener('mouseleave', () => { timer = setInterval(() => goToIndex(currentIndex + 1), 4000); });
+      window.addEventListener('resize', () => {
+        const newCount = getVisibleCount();
+        if (newCount !== visibleCount) {
+          visibleCount = newCount;
+          goToIndex(currentIndex); // reajusta translate com novo percentual
+        }
+      });
+    }
+
+    const grid = document.getElementById('projects-grid');
+
+    projects.forEach((p) => {
+      const article = document.createElement('article');
+      article.className = 'card';
+      const isOdt = p.docUrl.toLowerCase().endsWith('.odt');
+      const docLabel = isOdt ? 'Explicação (ODT)' : 'Explicação (PDF)';
+      article.innerHTML = `
+          <figure class='card-media'>
+            <a href='${p.gameUrl}' target='_blank' rel='noopener noreferrer' aria-label='Abrir jogo ${p.id}'>
+              <img src='${p.gameImg}' alt='Capa do jogo do projeto ${p.id}' />
+            </a>
+          </figure>
+          <figure class='card-media'>
+            <img src='${p.teamImg}' alt='Imagem da dupla (mangá) do projeto ${p.id}' />
+          </figure>
+          <div class='card-body'>
+            <h3 class='card-title'>${p.title}</h3>
+            <div class='card-meta'>
+              <span class='muted'>${p.theme}</span>
+              <span class='pill'>J${p.id.padStart(2,'0')}</span>
+            </div>
+            <p>${p.team}</p>
+            <div class='card-actions' style='display:flex; gap:10px;'>
+              <a href='${p.gameUrl}' target='_blank' rel='noopener noreferrer' class='event-link'>Abrir jogo</a>
+              <a href='${p.docUrl}' target='_blank' rel='noopener noreferrer' class='event-link'>${docLabel}</a>
+            </div>
+          </div>
+        `;
+      grid.appendChild(article);
+    });
+  </script>
+</body>
+
+</html>

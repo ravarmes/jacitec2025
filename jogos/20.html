@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cachoeiro Sustentável - Jogo de Reciclagem</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; overflow-x: hidden; touch-action: none;">
+
+<!-- Tela de Boas-vindas -->
+<div id="telaInicio" style="width: 100vw; height: 100vh; background: linear-gradient(135deg, #1e5128 0%, #4e9f3d 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; z-index: 1000;">
+    <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.95); border-radius: 20px; max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <h1 style="color: #1e5128; font-size: 2.5em; margin: 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">🌿 Cachoeiro Sustentável 🌿</h1>
+        <p style="color: #333; font-size: 1.2em; margin: 15px 0;">Aprenda a descartar corretamente os resíduos!</p>
+        <p style="color: #666; font-size: 0.9em; margin: 10px 20px;">Arraste cada item para a lixeira da cor correta e ajude a preservar nossa cidade.</p>
+        <button id="btnIniciar" style="background: #4e9f3d; color: white; border: none; padding: 15px 40px; font-size: 1.3em; border-radius: 50px; cursor: pointer; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); font-weight: bold;" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">🎮 COMEÇAR!</button>
+    </div>
+</div>
+
+<!-- Área do Jogo -->
+<div id="areaJogo" style="display: none; width: 100vw; min-height: 100vh; background: linear-gradient(180deg, #87ceeb 0%, #e0f6ff 50%, #90ee90 100%); position: relative; overflow: hidden;">
+    
+    <!-- Cabeçalho -->
+    <div style="background: rgba(30, 81, 40, 0.9); color: white; padding: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+        <h2 style="margin: 5px 0; font-size: 1.5em;">🌿 Cachoeiro Sustentável 🌿</h2>
+        <div style="display: flex; justify-content: space-around; margin-top: 10px; font-size: 1.1em;">
+            <span>⭐ Pontos: <strong id="pontuacao">0</strong></span>
+            <span>📦 Itens: <strong id="itensRestantes">0</strong>/<strong id="totalItens">0</strong></span>
+        </div>
+    </div>
+
+    <!-- Decoração: Pedra do Itabira (fundo) -->
+    <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 200px; height: 150px; background: linear-gradient(135deg, #5a5a5a, #8b7355); border-radius: 50% 50% 0 0; opacity: 0.3; z-index: 1;"></div>
+
+    <!-- Rio Itapemirim (decorativo) -->
+    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: linear-gradient(180deg, transparent, rgba(100, 149, 237, 0.4)); z-index: 1;"></div>
+
+    <!-- Container das Lixeiras -->
+    <div id="containerLixeiras" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 20px 10px; margin-top: 20px; z-index: 10; position: relative;">
+        <!-- Lixeiras serão criadas dinamicamente -->
+    </div>
+
+    <!-- Container dos Itens (Lixo) -->
+    <div id="containerItens" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px 10px; z-index: 10; position: relative; min-height: 200px;">
+        <!-- Itens serão criados dinamicamente -->
+    </div>
+
+</div>
+
+<!-- Tela de Resultado -->
+<div id="telaResultado" style="display: none; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); position: fixed; top: 0; left: 0; z-index: 2000; align-items: center; justify-content: center;">
+    <div style="text-align: center; padding: 30px; background: white; border-radius: 20px; max-width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+        <h2 style="color: #1e5128; font-size: 2em; margin: 10px 0;">🎉 Parabéns! 🎉</h2>
+        <p style="font-size: 1.5em; color: #333; margin: 15px 0;">Sua pontuação: <strong id="pontuacaoFinal" style="color: #4e9f3d;">0</strong></p>
+        <div id="mensagemFinal" style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #4e9f3d;">
+            <p style="color: #1e5128; font-size: 1.1em; margin: 0;"></p>
+        </div>
+        <button id="btnReiniciar" style="background: #4e9f3d; color: white; border: none; padding: 15px 40px; font-size: 1.2em; border-radius: 50px; cursor: pointer; margin-top: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); font-weight: bold;" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">🔄 JOGAR NOVAMENTE</button>
+    </div>
+</div>
+
+<!-- Modal de Feedback -->
+<div id="modalFeedback" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3000; width: 90%; max-width: 400px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); padding: 25px; text-align: center;">
+    <div id="feedbackConteudo" style="font-size: 1.1em; color: #333; line-height: 1.6;"></div>
+    <button id="btnFecharModal" style="background: #4e9f3d; color: white; border: none; padding: 12px 30px; font-size: 1.1em; border-radius: 50px; cursor: pointer; margin-top: 20px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); font-weight: bold;" ontouchstart="this.style.transform='scale(0.95)'" ontouchend="this.style.transform='scale(1)'">OK</button>
+</div>
+
+<script>
+// ========== DADOS DO JOGO ==========
+
+const tiposLixeiras = [
+    { tipo: 'papel', nome: 'Papel', cor: '#1e88e5', emoji: '📄' },
+    { tipo: 'plastico', nome: 'Plástico', cor: '#e53935', emoji: '🍾' },
+    { tipo: 'vidro', nome: 'Vidro', cor: '#43a047', emoji: '🍾' },
+    { tipo: 'metal', nome: 'Metal', cor: '#fdd835', emoji: '🥫' },
+    { tipo: 'organico', nome: 'Orgânico', cor: '#6d4c41', emoji: '🍎' }
+];
+
+const itensLixo = [
+    { tipo: 'papel', emoji: '📰', nome: 'Jornal' },
+    { tipo: 'papel', emoji: '📦', nome: 'Caixa de papelão' },
+    { tipo: 'papel', emoji: '📋', nome: 'Papel de escritório' },
+    { tipo: 'plastico', emoji: '🥤', nome: 'Copo plástico' },
+    { tipo: 'plastico', emoji: '🍾', nome: 'Garrafa PET' },
+    { tipo: 'plastico', emoji: '🛍️', nome: 'Sacola plástica' },
+    { tipo: 'vidro', emoji: '🍷', nome: 'Garrafa de vidro' },
+    { tipo: 'vidro', emoji: '🫙', nome: 'Pote de vidro' },
+    { tipo: 'metal', emoji: '🥫', nome: 'Lata de alumínio' },
+    { tipo: 'metal', emoji: '🔧', nome: 'Metal' },
+    { tipo: 'organico', emoji: '🍌', nome: 'Casca de banana' },
+    { tipo: 'organico', emoji: '🍎', nome: 'Resto de fruta' }
+];
+
+const mensagensCorretas = {
+    papel: 'Muito bem! 📄 Você sabia que reciclar 1 tonelada de papel salva cerca de 22 árvores? Cachoeiro de Itapemirim agradece!',
+    plastico: 'Excelente! 🍾 O plástico pode levar até 450 anos para se decompor na natureza. Reciclar é essencial para nosso Rio Itapemirim!',
+    vidro: 'Perfeito! ♻️ O vidro pode ser reciclado infinitas vezes sem perder qualidade. Continue ajudando Cachoeiro!',
+    metal: 'Ótimo! 🥫 Uma latinha de alumínio pode ser reciclada e voltar às prateleiras em apenas 60 dias!',
+    organico: '🌱 Parabéns! Resíduos orgânicos podem virar adubo e ajudar a preservar o solo de Cachoeiro de Itapemirim!'
+};
+
+const mensagensErradas = {
+    papel: 'Ops! 📄 Este item deve ir na lixeira AZUL (Papel).',
+    plastico: 'Atenção! 🍾 Este item deve ir na lixeira VERMELHA (Plástico).',
+    vidro: 'Cuidado! 🍾 Este item deve ir na lixeira VERDE (Vidro).',
+    metal: 'Não é aí! 🥫 Este item deve ir na lixeira AMARELA (Metal).',
+    organico: 'Ops! 🍎 Este item deve ir na lixeira MARROM (Orgânico).'
+};
+
+// ========== VARIÁVEIS DO JOGO ==========
+
+let pontuacao = 0;
+let itensClassificados = 0;
+let itensSorteados = [];
+let itemArrastando = null;
+let offsetX = 0;
+let offsetY = 0;
+
+// ========== FUNÇÕES PRINCIPAIS ==========
+
+function iniciarJogo() {
+    document.getElementById('telaInicio').style.display = 'none';
+    document.getElementById('areaJogo').style.display = 'block';
+    
+    pontuacao = 0;
+    itensClassificados = 0;
+    atualizarPontuacao();
+    
+    // Sorteia e embaralha os itens
+    itensSorteados = [...itensLixo].sort(() => Math.random() - 0.5);
+    
+    document.getElementById('totalItens').textContent = itensSorteados.length;
+    document.getElementById('itensRestantes').textContent = itensSorteados.length;
+    
+    criarLixeiras();
+    criarItens();
+}
+
+function criarLixeiras() {
+    const container = document.getElementById('containerLixeiras');
+    container.innerHTML = '';
+    
+    tiposLixeiras.forEach(lixeira => {
+        const div = document.createElement('div');
+        div.id = 'lixeira-' + lixeira.tipo;
+        div.setAttribute('data-tipo', lixeira.tipo);
+        
+        const tamanho = window.innerWidth < 600 ? '80px' : '100px';
+        
+        div.setAttribute('style', `
+            width: ${tamanho};
+            height: ${tamanho};
+            background: ${lixeira.cor};
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 3px solid rgba(255,255,255,0.3);
+            transition: transform 0.2s;
+        `);
+        
+        div.innerHTML = `
+            <div style="font-size: 2.5em;">${lixeira.emoji}</div>
+            <div style="color: white; font-weight: bold; font-size: 0.8em; margin-top: 5px; text-align: center;">${lixeira.nome}</div>
+        `;
+        
+        container.appendChild(div);
+    });
+}
+
+function criarItens() {
+    const container = document.getElementById('containerItens');
+    container.innerHTML = '';
+    
+    itensSorteados.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.id = 'item-' + index;
+        div.setAttribute('data-tipo', item.tipo);
+        div.className = 'item-lixo';
+        
+        const tamanho = window.innerWidth < 600 ? '70px' : '90px';
+        
+        div.setAttribute('style', `
+            width: ${tamanho};
+            height: ${tamanho};
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: grab;
+            border: 3px solid #ddd;
+            position: relative;
+            touch-action: none;
+        `);
+        
+        div.innerHTML = `
+            <div style="font-size: 2.5em;">${item.emoji}</div>
+            <div style="font-size: 0.7em; color: #666; margin-top: 3px; text-align: center;">${item.nome}</div>
+        `;
+        
+        // Eventos para desktop
+        div.addEventListener('mousedown', iniciarArrastar);
+        
+        // Eventos para mobile (touch)
+        div.addEventListener('touchstart', iniciarArrastarTouch, { passive: false });
+        
+        container.appendChild(div);
+    });
+}
+
+// ========== FUNÇÕES DE DRAG & DROP (DESKTOP) ==========
+
+function iniciarArrastar(e) {
+    e.preventDefault();
+    itemArrastando = e.target.closest('.item-lixo');
+    if (!itemArrastando) return;
+    
+    const rect = itemArrastando.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    
+    itemArrastando.style.cursor = 'grabbing';
+    itemArrastando.style.zIndex = '1000';
+    itemArrastando.style.position = 'fixed';
+    
+    document.addEventListener('mousemove', arrastar);
+    document.addEventListener('mouseup', soltarItem);
+}
+
+function arrastar(e) {
+    if (!itemArrastando) return;
+    
+    itemArrastando.style.left = (e.clientX - offsetX) + 'px';
+    itemArrastando.style.top = (e.clientY - offsetY) + 'px';
+}
+
+function soltarItem(e) {
+    if (!itemArrastando) return;
+    
+    document.removeEventListener('mousemove', arrastar);
+    document.removeEventListener('mouseup', soltarItem);
+    
+    const lixeiras = document.querySelectorAll('[id^="lixeira-"]');
+    let lixeiraAlvo = null;
+    
+    lixeiras.forEach(lixeira => {
+        const rect = lixeira.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right &&
+            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+            lixeiraAlvo = lixeira;
+        }
+    });
+    
+    verificarResposta(itemArrastando, lixeiraAlvo);
+}
+
+// ========== FUNÇÕES DE DRAG & DROP (MOBILE/TOUCH) ==========
+
+function iniciarArrastarTouch(e) {
+    e.preventDefault();
+    itemArrastando = e.target.closest('.item-lixo');
+    if (!itemArrastando) return;
+    
+    const touch = e.touches[0];
+    const rect = itemArrastando.getBoundingClientRect();
+    offsetX = touch.clientX - rect.left;
+    offsetY = touch.clientY - rect.top;
+    
+    itemArrastando.style.cursor = 'grabbing';
+    itemArrastando.style.zIndex = '1000';
+    itemArrastando.style.position = 'fixed';
+    
+    document.addEventListener('touchmove', arrastarTouch, { passive: false });
+    document.addEventListener('touchend', soltarItemTouch);
+}
+
+function arrastarTouch(e) {
+    e.preventDefault();
+    if (!itemArrastando) return;
+    
+    const touch = e.touches[0];
+    itemArrastando.style.left = (touch.clientX - offsetX) + 'px';
+    itemArrastando.style.top = (touch.clientY - offsetY) + 'px';
+}
+
+function soltarItemTouch(e) {
+    if (!itemArrastando) return;
+    
+    document.removeEventListener('touchmove', arrastarTouch);
+    document.removeEventListener('touchend', soltarItemTouch);
+    
+    const touch = e.changedTouches[0];
+    const lixeiras = document.querySelectorAll('[id^="lixeira-"]');
+    let lixeiraAlvo = null;
+    
+    lixeiras.forEach(lixeira => {
+        const rect = lixeira.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+            lixeiraAlvo = lixeira;
+        }
+    });
+    
+    verificarResposta(itemArrastando, lixeiraAlvo);
+}
+
+// ========== VERIFICAÇÃO DE RESPOSTA ==========
+
+function verificarResposta(item, lixeira) {
+    if (!lixeira) {
+        // Não soltou em nenhuma lixeira, volta para posição original
+        item.style.position = 'relative';
+        item.style.left = '0';
+        item.style.top = '0';
+        item.style.cursor = 'grab';
+        item.style.zIndex = '10';
+        itemArrastando = null;
+        return;
+    }
+    
+    const tipoItem = item.getAttribute('data-tipo');
+    const tipoLixeira = lixeira.getAttribute('data-tipo');
+    
+    if (tipoItem === tipoLixeira) {
+        // CORRETO!
+        pontuacao += 10;
+        mostrarFeedback(mensagensCorretas[tipoItem], true);
+        
+        // Animação de acerto
+        lixeira.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+            lixeira.style.transform = 'scale(1)';
+        }, 200);
+        
+        // Remove o item
+        item.remove();
+    } else {
+        // ERRADO!
+        mostrarFeedback(mensagensErradas[tipoItem], false);
+        
+        // Volta para posição original
+        item.style.position = 'relative';
+        item.style.left = '0';
+        item.style.top = '0';
+        item.style.cursor = 'grab';
+        item.style.zIndex = '10';
+    }
+    
+    itemArrastando = null;
+    itensClassificados++;
+    atualizarPontuacao();
+    
+    // Verifica se terminou o jogo
+    if (itensClassificados >= itensSorteados.length) {
+        setTimeout(finalizarJogo, 1000);
+    }
+}
+
+// ========== FEEDBACK VISUAL ==========
+
+function mostrarFeedback(mensagem, correto) {
+    const modal = document.getElementById('modalFeedback');
+    const conteudo = document.getElementById('feedbackConteudo');
+    
+    if (correto) {
+        conteudo.innerHTML = `<div style="font-size: 3em; margin-bottom: 10px;">✅</div><p>${mensagem}</p>`;
+    } else {
+        conteudo.innerHTML = `<div style="font-size: 3em; margin-bottom: 10px;">❌</div><p>${mensagem}</p>`;
+    }
+    
+    modal.style.display = 'block';
+}
+
+function fecharModal() {
+    document.getElementById('modalFeedback').style.display = 'none';
+}
+
+// ========== ATUALIZAÇÃO DE PONTUAÇÃO ==========
+
+function atualizarPontuacao() {
+    document.getElementById('pontuacao').textContent = pontuacao;
+    const restantes = itensSorteados.length - itensClassificados;
+    document.getElementById('itensRestantes').textContent = restantes;
+}
+
+// ========== FINALIZAÇÃO DO JOGO ==========
+
+function finalizarJogo() {
+    document.getElementById('areaJogo').style.display = 'none';
+    document.getElementById('telaResultado').style.display = 'flex';
+    document.getElementById('pontuacaoFinal').textContent = pontuacao;
+    
+    const mensagemDiv = document.getElementById('mensagemFinal').querySelector('p');
+    
+    if (pontuacao >= 100) {
+        mensagemDiv.innerHTML = '🏆 <strong>Excelente!</strong> Você é um verdadeiro defensor do meio ambiente! Cachoeiro de Itapemirim está mais limpa e verde graças a pessoas como você. Continue reciclando e inspire outros!';
+    } else if (pontuacao >= 60) {
+        mensagemDiv.innerHTML = '👏 <strong>Muito bom!</strong> Você conhece bem a separação de resíduos. Com mais prática, você será um mestre da reciclagem em Cachoeiro de Itapemirim!';
+    } else {
+        mensagemDiv.innerHTML = '💪 <strong>Continue tentando!</strong> A reciclagem é importante para nossa cidade. Cada esforço conta para preservar o Rio Itapemirim e a Pedra do Itabira. Vamos jogar de novo?';
+    }
+}
+
+// ========== EVENTOS DOS BOTÕES ==========
+
+document.getElementById('btnIniciar').addEventListener('click', iniciarJogo);
+document.getElementById('btnIniciar').addEventListener('touchend', function(e) {
+    e.preventDefault();
+    iniciarJogo();
+});
+
+document.getElementById('btnReiniciar').addEventListener('click', function() {
+    document.getElementById('telaResultado').style.display = 'none';
+    iniciarJogo();
+});
+document.getElementById('btnReiniciar').addEventListener('touchend', function(e) {
+    e.preventDefault();
+    document.getElementById('telaResultado').style.display = 'none';
+    iniciarJogo();
+});
+
+document.getElementById('btnFecharModal').addEventListener('click', fecharModal);
+document.getElementById('btnFecharModal').addEventListener('touchend', function(e) {
+    e.preventDefault();
+    fecharModal();
+});
+
+// ========== RESPONSIVIDADE ==========
+
+window.addEventListener('resize', function() {
+    if (document.getElementById('areaJogo').style.display !== 'none') {
+        criarLixeiras();
+        // Reposiciona os itens restantes
+        const itensRestantes = document.querySelectorAll('.item-lixo');
+        itensRestantes.forEach(item => {
+            item.style.position = 'relative';
+            item.style.left = '0';
+            item.style.top = '0';
+        });
+    }
+});
+
+</script>
+
+</body>
+</html>

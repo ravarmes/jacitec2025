@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defenda o Litoral Capixaba</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(180deg, #87CEEB 0%, #4A90E2 50%, #F4E4C1 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* TELA INICIAL */
+        #startScreen {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .game-title {
+            color: #2C5F7C;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .alert-box {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 25px 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(238, 90, 111, 0.4);
+        }
+
+        .question {
+            font-size: 1.3em;
+            color: #333;
+            margin: 30px 0 25px 0;
+            font-weight: 600;
+        }
+
+        .beaches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .beach-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .beach-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .beach-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .beach-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .beach-desc {
+            font-size: 0.9em;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        /* TELA DO JOGO */
+        #gameScreen {
+            display: none;
+        }
+
+        .game-header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .beach-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .selected-beach {
+            font-size: 1.3em;
+            color: #2C5F7C;
+            font-weight: bold;
+        }
+
+        .round-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .score-section {
+            margin-top: 15px;
+        }
+
+        .score-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .score-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 25px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .score-fill {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            height: 100%;
+            transition: all 0.8s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .score-fill.medium {
+            background: linear-gradient(90deg, #FFC107, #FF9800);
+        }
+
+        .score-fill.low {
+            background: linear-gradient(90deg, #f44336, #e91e63);
+        }
+
+        /* SIMULAÇÃO VISUAL DA PRAIA */
+        .beach-simulation {
+            position: relative;
+            height: 300px;
+            background: #87CEEB;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+        }
+
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(180deg, #87CEEB, #B0E0E6);
+            z-index: 0;
+        }
+
+        .sea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 40%;
+            background: linear-gradient(90deg, #2C5F7C, #4A90E2);
+            transition: width 1s ease-out;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .waves {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            font-size: 2em;
+            animation: wavesMove 3s ease-in-out infinite;
+        }
+
+        @keyframes wavesMove {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-10px); }
+        }
+
+        .sand {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 60%;
+            background: linear-gradient(90deg, #D4B896, #F4E4C1);
+            transition: width 1s ease-out;
+            z-index: 1;
+        }
+
+        .vegetation {
+            position: absolute;
+            top: 50%;
+            right: 5%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 2em;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+            z-index: 2;
+        }
+
+        .rocks {
+            position: absolute;
+            bottom: 20%;
+            right: 40%;
+            display: flex;
+            gap: 15px;
+            font-size: 2em;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+            z-index: 2;
+        }
+
+        .pollution {
+            position: absolute;
+            top: 60%;
+            right: 10%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 2em;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+            z-index: 2;
+        }
+
+        .buildings {
+            position: absolute;
+            top: 20%;
+            right: 10%;
+            display: flex;
+            gap: 15px;
+            font-size: 2.5em;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+            z-index: 2;
+        }
+
+        .education-signs {
+            position: absolute;
+            top: 15%;
+            right: 25%;
+            display: flex;
+            gap: 15px;
+            font-size: 2em;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+            z-index: 2;
+        }
+
+        .protection-barriers {
+            position: absolute;
+            bottom: 15%;
+            right: 35%;
+            display: flex;
+            gap: 15px;
+            font-size: 2.5em;
+            opacity: 0;
+            transition: opacity 1s ease-out;
+            z-index: 2;
+        }
+
+        /* ÁREA DE DECISÃO */
+        .decision-area {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .situation-box {
+            background: #f8f9fa;
+            border-left: 5px solid #2C5F7C;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+        }
+
+        .situation-text {
+            color: #333;
+            font-size: 1.15em;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 25px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .option-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .option-emoji {
+            font-size: 1.5em;
+        }
+
+        .feedback {
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            display: none;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback.positive {
+            background: #e8f5e9;
+            border-left: 5px solid #4CAF50;
+            color: #2e7d32;
+        }
+
+        .feedback.negative {
+            background: #ffebee;
+            border-left: 5px solid #f44336;
+            color: #c62828;
+        }
+
+        .feedback-text {
+            font-size: 1.05em;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .next-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            display: none;
+            transition: background 0.3s ease;
+            font-weight: bold;
+        }
+
+        .next-btn:hover {
+            background: #45a049;
+        }
+
+        /* TELA FINAL */
+        #finalScreen {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .final-icon {
+            font-size: 6em;
+            margin-bottom: 20px;
+            animation: bounce 1s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .final-title {
+            color: #2C5F7C;
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .final-score {
+            font-size: 1.5em;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .final-text {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 600px) {
+            .game-title {
+                font-size: 2em;
+            }
+
+            .alert-box {
+                font-size: 1.1em;
+            }
+
+            .beaches-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .beach-simulation {
+                height: 250px;
+            }
+
+            .option-btn {
+                font-size: 1em;
+                padding: 15px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- TELA INICIAL -->
+        <div id="startScreen">
+            <h1 class="game-title">🌊 Defenda o Litoral Capixaba</h1>
+            <div class="alert-box">
+                ⚠️ Não permita que o mar avance sobre a costa!
+            </div>
+            <p class="question">Escolha a praia que você deseja proteger:</p>
+            <div class="beaches-grid">
+                <button class="beach-card" onclick="selectBeach('Piúma', '🏖️')">
+                    <div class="beach-icon">🏖️</div>
+                    <div class="beach-name">Piúma</div>
+                    <div class="beach-desc">Praia pequena e urbanizada, vulnerável à maré alta</div>
+                </button>
+                <button class="beach-card" onclick="selectBeach('Anchieta', '🌴')">
+                    <div class="beach-icon">🌴</div>
+                    <div class="beach-name">Anchieta</div>
+                    <div class="beach-desc">Área com manguezais, sensível a poluição e erosão</div>
+                </button>
+                <button class="beach-card" onclick="selectBeach('Marataízes', '🐢')">
+                    <div class="beach-icon">🐢</div>
+                    <div class="beach-name">Marataízes</div>
+                    <div class="beach-desc">Habitat de tartarugas, com risco alto de erosão costeira</div>
+                </button>
+                <button class="beach-card" onclick="selectBeach('Vila Velha', '🌊')">
+                    <div class="beach-icon">🌊</div>
+                    <div class="beach-name">Vila Velha</div>
+                    <div class="beach-desc">Região populosa, exige planejamento urbano</div>
+                </button>
+                <button class="beach-card" onclick="selectBeach('Guarapari', '🪨')">
+                    <div class="beach-icon">🪨</div>
+                    <div class="beach-name">Guarapari</div>
+                    <div class="beach-desc">Costas rochosas e turísticas, risco moderado de impacto</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- TELA DO JOGO -->
+        <div id="gameScreen">
+            <div class="game-header">
+                <div class="beach-info">
+                    <div class="selected-beach" id="beachName"></div>
+                    <div class="round-badge" id="roundBadge">Rodada 1/5</div>
+                </div>
+                <div class="score-section">
+                    <div class="score-label">
+                        <span>🌱 Saúde Ambiental</span>
+                        <span id="scoreText">50 pontos</span>
+                    </div>
+                    <div class="score-bar">
+                        <div class="score-fill" id="scoreFill" style="width: 50%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="beach-simulation">
+                <div class="sky"></div>
+                <div class="sea" id="seaLevel">
+                    <div class="waves">
+                        <span>🌊</span>
+                        <span>🌊</span>
+                        <span>🌊</span>
+                        <span>🌊</span>
+                    </div>
+                </div>
+                <div class="sand" id="sandLevel"></div>
+                <div class="vegetation" id="vegetation">
+                    <span>🌴</span>
+                    <span>🌿</span>
+                    <span>🌱</span>
+                    <span>🌾</span>
+                </div>
+                <div class="rocks" id="rocks">
+                    <span>🪨</span>
+                    <span>⛰️</span>
+                    <span>🪨</span>
+                </div>
+                <div class="pollution" id="pollution">
+                    <span>🗑️</span>
+                    <span>💀</span>
+                    <span>🗑️</span>
+                </div>
+                <div class="buildings" id="buildings">
+                    <span>🏢</span>
+                    <span>🏠</span>
+                    <span>🏗️</span>
+                </div>
+                <div class="education-signs" id="educationSigns">
+                    <span>📚</span>
+                    <span>🎓</span>
+                    <span>📢</span>
+                </div>
+                <div class="protection-barriers" id="protectionBarriers">
+                    <span>🚧</span>
+                    <span>🛡️</span>
+                    <span>🚧</span>
+                </div>
+            </div>
+
+            <div class="decision-area">
+                <div class="situation-box">
+                    <div class="situation-text" id="situationText"></div>
+                </div>
+
+                <div class="options">
+                    <button class="option-btn" id="optionA">
+                        <span class="option-emoji" id="emojiA"></span>
+                        <span id="textA"></span>
+                    </button>
+                    <button class="option-btn" id="optionB">
+                        <span class="option-emoji" id="emojiB"></span>
+                        <span id="textB"></span>
+                    </button>
+                </div>
+
+                <div class="feedback" id="feedback">
+                    <div class="feedback-text" id="feedbackText"></div>
+                </div>
+
+                <button class="next-btn" id="nextBtn">Próxima Rodada →</button>
+            </div>
+        </div>
+
+        <!-- TELA FINAL -->
+        <div id="finalScreen">
+            <div class="final-icon" id="finalIcon"></div>
+            <h2 class="final-title" id="finalTitle"></h2>
+            <div class="final-score" id="finalScore"></div>
+            <p class="final-text" id="finalText"></p>
+            <button class="restart-btn" onclick="restartGame()">🔄 Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        const rounds = [
+            {
+                situation: 'A vegetação de restinga está sendo retirada para dar lugar a construções. O que fazer?',
+                optionA: { 
+                    emoji: '🏢', 
+                    text: 'Construir na orla', 
+                    points: -20, 
+                    feedback: 'Péssima escolha! A vegetação de restinga protege a costa contra erosão e é fundamental para o equilíbrio do ecossistema. O mar avançou! 😢', 
+                    visual: { 
+                        action: 'remove_vegetation_add_buildings',
+                        seaChange: 5
+                    }
+                },
+                optionB: { 
+                    emoji: '🌱', 
+                    text: 'Replantar a vegetação', 
+                    points: 20, 
+                    feedback: 'Excelente decisão! A vegetação de restinga é essencial para proteger a costa e abrigar a fauna local. A praia está mais protegida! 🌟', 
+                    visual: { 
+                        action: 'add_vegetation',
+                        seaChange: -3
+                    }
+                }
+            },
+            {
+                situation: 'Dunas e pedras naturais estão sendo removidas para ampliar a praia.',
+                optionA: { 
+                    emoji: '🪨', 
+                    text: 'Manter dunas e pedras', 
+                    points: 20, 
+                    feedback: 'Ótima escolha! As dunas e pedras são barreiras naturais que protegem contra o avanço do mar e preservam a biodiversidade. 👏', 
+                    visual: { 
+                        action: 'add_rocks',
+                        seaChange: -3
+                    }
+                },
+                optionB: { 
+                    emoji: '🏖️', 
+                    text: 'Remover barreiras naturais', 
+                    points: -15, 
+                    feedback: 'Decisão arriscada! Sem barreiras naturais, a erosão costeira acelera e destrói propriedades. O mar avançou mais! ⚠️', 
+                    visual: { 
+                        action: 'remove_rocks',
+                        seaChange: 5
+                    }
+                }
+            },
+            {
+                situation: 'A população não sabe dos riscos do avanço do mar.',
+                optionA: { 
+                    emoji: '🙈', 
+                    text: 'Ignorar o problema', 
+                    points: -10, 
+                    feedback: 'Má decisão! Sem informação, as pessoas não sabem como agir e o problema piora continuamente. 😟', 
+                    visual: { 
+                        action: 'none',
+                        seaChange: 3
+                    }
+                },
+                optionB: { 
+                    emoji: '📣', 
+                    text: 'Realizar campanhas educativas', 
+                    points: 15, 
+                    feedback: 'Muito bem! Educação ambiental é fundamental para conscientizar e mobilizar a comunidade na proteção do litoral. ✨', 
+                    visual: { 
+                        action: 'add_education_signs',
+                        seaChange: -2
+                    }
+                }
+            },
+            {
+                situation: 'Esgoto e lixo estão sendo lançados no mar.',
+                optionA: { 
+                    emoji: '🗑️', 
+                    text: 'Deixar como está', 
+                    points: -20, 
+                    feedback: 'Péssimo! A poluição destrói a vida marinha, contamina a água e prejudica o turismo. A praia ficou poluída! 💔', 
+                    visual: { 
+                        action: 'add_pollution',
+                        seaChange: 4
+                    }
+                },
+                optionB: { 
+                    emoji: '♻️', 
+                    text: 'Instalar sistema de tratamento', 
+                    points: 20, 
+                    feedback: 'Perfeito! Saneamento básico protege a saúde pública e preserva o ecossistema marinho. A praia está mais limpa! 💙', 
+                    visual: { 
+                        action: 'remove_pollution',
+                        seaChange: -3
+                    }
+                }
+            },
+            {
+                situation: 'Casas estão sendo construídas em áreas de risco próximas ao mar.',
+                optionA: { 
+                    emoji: '🏠', 
+                    text: 'Permitir construções', 
+                    points: -25, 
+                    feedback: 'Terrível escolha! Construir em áreas de risco coloca vidas em perigo e aumenta os prejuízos com o avanço do mar. 😱', 
+                    visual: { 
+                        action: 'add_risky_buildings',
+                        seaChange: 6
+                    }
+                },
+                optionB: { 
+                    emoji: '🛑', 
+                    text: 'Criar áreas de proteção', 
+                    points: 25, 
+                    feedback: 'Excelente! Planejamento urbano adequado evita tragédias e preserva o litoral para as futuras gerações. 🌊✨', 
+                    visual: { 
+                        action: 'add_protection_barriers',
+                        seaChange: -4
+                    }
+                }
+            }
+        ];
+
+        let selectedBeach = '';
+        let beachIcon = '';
+        let currentRound = 0;
+        let score = 50;
+        let seaWidth = 40;
+
+        function selectBeach(beach, icon) {
+            selectedBeach = beach;
+            beachIcon = icon;
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            document.getElementById('beachName').textContent = `${icon} ${beach}`;
+            loadRound();
+        }
+
+        function loadRound() {
+            const round = rounds[currentRound];
+            document.getElementById('roundBadge').textContent = `Rodada ${currentRound + 1}/5`;
+            document.getElementById('situationText').textContent = round.situation;
+            
+            document.getElementById('emojiA').textContent = round.optionA.emoji;
+            document.getElementById('textA').textContent = round.optionA.text;
+            document.getElementById('emojiB').textContent = round.optionB.emoji;
+            document.getElementById('textB').textContent = round.optionB.text;
+            
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('optionA').disabled = false;
+            document.getElementById('optionB').disabled = false;
+        }
+
+        function selectOption(option) {
+            const round = rounds[currentRound];
+            const choice = option === 'A' ? round.optionA : round.optionB;
+            
+            score = Math.max(0, Math.min(100, score + choice.points));
+            updateScore();
+            updateVisuals(choice.visual);
+            showFeedback(choice.feedback, choice.points);
+            
+            document.getElementById('optionA').disabled = true;
+            document.getElementById('optionB').disabled = true;
+            
+            if (currentRound < rounds.length - 1) {
+                document.getElementById('nextBtn').style.display = 'block';
+            } else {
+                setTimeout(showFinalResult, 2500);
+            }
+        }
+
+        function updateScore() {
+            const scoreFill = document.getElementById('scoreFill');
+            const scoreText = document.getElementById('scoreText');
+            
+            scoreFill.style.width = score + '%';
+            scoreText.textContent = Math.round(score) + ' pontos';
+            
+            scoreFill.className = 'score-fill';
+            if (score < 40) {
+                scoreFill.classList.add('low');
+            } else if (score < 80) {
+                scoreFill.classList.add('medium');
+            }
+        }
+
+        function updateVisuals(visualData) {
+            const sea = document.getElementById('seaLevel');
+            const sand = document.getElementById('sandLevel');
+            const vegetation = document.getElementById('vegetation');
+            const rocks = document.getElementById('rocks');
+            const pollution = document.getElementById('pollution');
+            const buildings = document.getElementById('buildings');
+            const educationSigns = document.getElementById('educationSigns');
+            const protectionBarriers = document.getElementById('protectionBarriers');
+            
+            // Atualiza o avanço ou recuo do mar
+            seaWidth = Math.max(25, Math.min(75, seaWidth + visualData.seaChange));
+            sea.style.width = seaWidth + '%';
+            sand.style.width = (100 - seaWidth) + '%';
+            
+            // Executa a ação visual específica
+            switch(visualData.action) {
+                case 'add_vegetation':
+                    // Replantar vegetação: vegetação APARECE
+                    vegetation.style.opacity = '1';
+                    break;
+                    
+                case 'remove_vegetation_add_buildings':
+                    // Construir na orla: vegetação DESAPARECE e prédios APARECEM
+                    vegetation.style.opacity = '0';
+                    buildings.style.opacity = '1';
+                    break;
+                    
+                case 'add_rocks':
+                    // Manter dunas e pedras: rochas APARECEM
+                    rocks.style.opacity = '1';
+                    break;
+                    
+                case 'remove_rocks':
+                    // Remover barreiras: rochas DESAPARECEM
+                    rocks.style.opacity = '0';
+                    break;
+                    
+                case 'add_education_signs':
+                    // Campanhas educativas: placas APARECEM
+                    educationSigns.style.opacity = '1';
+                    break;
+                    
+                case 'none':
+                    // Ignorar problema: nada muda visualmente
+                    break;
+                    
+                case 'add_pollution':
+                    // Deixar poluição: lixo APARECE
+                    pollution.style.opacity = '1';
+                    break;
+                    
+                case 'remove_pollution':
+                    // Instalar tratamento: poluição DESAPARECE
+                    pollution.style.opacity = '0';
+                    break;
+                    
+                case 'add_risky_buildings':
+                    // Permitir construções em área de risco: casas APARECEM
+                    buildings.style.opacity = '1';
+                    break;
+                    
+                case 'add_protection_barriers':
+                    // Criar áreas de proteção: barreiras APARECEM
+                    protectionBarriers.style.opacity = '1';
+                    break;
+            }
+        }
+
+        function showFeedback(text, points) {
+            const feedback = document.getElementById('feedback');
+            const feedbackText = document.getElementById('feedbackText');
+            
+            feedbackText.textContent = text;
+            feedback.className = 'feedback';
+            feedback.classList.add(points > 0 ? 'positive' : 'negative');
+            feedback.style.display = 'block';
+        }
+
+        function nextRound() {
+            currentRound++;
+            loadRound();
+        }
+
+        function showFinalResult() {
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('finalScreen').style.display = 'block';
+            
+            let icon, title, text;
+            
+            if (score >= 80) {
+                icon = '🏆';
+                title = '✅ A praia foi protegida com sucesso!';
+                text = `Parabéns! Suas decisões foram exemplares e a ${selectedBeach} está segura! Você demonstrou que é possível proteger o litoral com planejamento, educação e respeito ao meio ambiente. Continue sendo um guardião das nossas praias! 🌊🌟`;
+            } else if (score >= 40) {
+                icon = '⚠️';
+                title = '⚠️ A praia sofreu impactos, mas resistiu';
+                text = `A ${selectedBeach} passou por dificuldades, mas conseguiu sobreviver graças a algumas de suas boas decisões. É importante aprender com os erros e fazer escolhas mais sustentáveis no futuro para proteger nosso litoral capixaba! 🌊`;
+            } else {
+                icon = '❌';
+                title = '❌ O mar avançou. A costa foi perdida!';
+                text = `Infelizmente, a ${selectedBeach} sofreu grande devastação. Suas decisões causaram danos graves ao ecossistema costeiro. Reflita sobre as consequências de nossas ações e jogue novamente para aprender como proteger nossas praias de forma efetiva! 😢`;
+            }
+            
+            document.getElementById('finalIcon').textContent = icon;
+            document.getElementById('finalTitle').textContent = title;
+            document.getElementById('finalScore').textContent = `Pontuação Final: ${Math.round(score)}/100`;
+            document.getElementById('finalText').textContent = text;
+        }
+
+        function restartGame() {
+            currentRound = 0;
+            score = 50;
+            seaWidth = 40;
+            
+            document.getElementById('finalScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            
+            // Resetar estado inicial: vegetação e rochas visíveis, resto oculto
+            document.getElementById('seaLevel').style.width = '40%';
+            document.getElementById('sandLevel').style.width = '60%';
+            document.getElementById('vegetation').style.opacity = '1';
+            document.getElementById('rocks').style.opacity = '1';
+            document.getElementById('pollution').style.opacity = '0';
+            document.getElementById('buildings').style.opacity = '0';
+            document.getElementById('educationSigns').style.opacity = '0';
+            document.getElementById('protectionBarriers').style.opacity = '0';
+            
+            updateScore();
+        }
+
+        document.getElementById('optionA').addEventListener('click', () => selectOption('A'));
+        document.getElementById('optionB').addEventListener('click', () => selectOption('B'));
+        document.getElementById('nextBtn').addEventListener('click', nextRound);
+    </script>
+</body>
+</html>

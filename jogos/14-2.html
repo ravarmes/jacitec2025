@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardiões do Litoral Sul-Capixaba</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-bar-container {
+            background: #ecf0f1;
+            height: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-bar {
+            height: 100%;
+            transition: width 0.5s ease, background 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .stat-budget {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+        }
+
+        .stat-community {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+        }
+
+        .stat-sea {
+            background: linear-gradient(90deg, #27ae60, #e74c3c);
+        }
+
+        .year-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+        .situation-card {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d4e9f5 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+        }
+
+        .situation-card.critical {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-left: 5px solid #e74c3c;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .situation-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .situation-location {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .situation-desc {
+            color: #34495e;
+            line-height: 1.6;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .choice-btn {
+            background: white;
+            border: 2px solid #3498db;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-size: 1rem;
+            color: #2c3e50;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .choice-btn:hover:not(.disabled) {
+            background: #3498db;
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .choice-btn:active:not(.disabled) {
+            transform: translateX(3px);
+        }
+
+        .choice-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #ecf0f1;
+            border-color: #bdc3c7;
+        }
+
+        .choice-cost {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+
+        .welcome-screen {
+            text-align: center;
+        }
+
+        .welcome-screen h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .welcome-screen p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-size: 1.05rem;
+        }
+
+        .welcome-screen input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            font-size: 1rem;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .game-over {
+            text-align: center;
+        }
+
+        .game-over h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .game-over.victory h2 {
+            color: #27ae60;
+        }
+
+        .game-over.defeat h2 {
+            color: #e74c3c;
+        }
+
+        .game-over p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-size: 1.05rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .feedback-message {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .feedback-message.positive {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .feedback-message.negative {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .feedback-message.neutral {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .player-info {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 12px 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .lives-counter {
+            background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .game-card {
+                padding: 20px;
+            }
+
+            .choice-btn {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-card" id="welcomeScreen">
+            <div class="welcome-screen">
+                <h2>🌊 Guardiões do Litoral Sul-Capixaba</h2>
+                <p>
+                    Bem-vindo ao simulador de gestão costeira do litoral sul capixaba! 
+                    Você assume o papel de gestor ambiental responsável por proteger 
+                    as cidades litorâneas do avanço do nível do mar.
+                </p>
+                <p>
+                    A cada ano, você enfrentará situações reais e precisará tomar decisões 
+                    difíceis que afetarão o orçamento municipal, o apoio da comunidade e 
+                    o nível do mar. Suas escolhas determinarão o futuro das praias capixabas!
+                </p>
+                <p style="font-size: 0.9rem; color: #7f8c8d;">
+                    💡 Dica: O orçamento aumenta anualmente baseado no apoio comunitário!
+                </p>
+                <input type="text" id="playerName" placeholder="Digite seu nome" maxlength="25">
+                <br>
+                <button class="btn-primary" id="startBtn">Começar Jornada</button>
+            </div>
+        </div>
+
+        <div class="game-card hidden" id="gameScreen">
+            <div class="header">
+                <h1>🌊 Guardiões do Litoral Sul-Capixaba</h1>
+                <p>Espírito Santo</p>
+            </div>
+
+            <div class="player-info" id="playerInfo">Gestor(a): <span id="playerNameDisplay"></span></div>
+
+            <div class="lives-counter">
+                👥 Vidas Salvas: <span id="livesSaved">0</span> mil | 
+                💔 Vidas Perdidas: <span id="livesLost">0</span> mil
+            </div>
+
+            <div class="year-display">
+                📅 Ano <span id="yearDisplay">1</span> de 25
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-label">💰 Orçamento Municipal</div>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar stat-budget" id="budgetBar">100</div>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">🤝 Apoio Comunitário</div>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar stat-community" id="communityBar">100%</div>
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">🌊 Nível do Mar</div>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar stat-sea" id="seaBar">30%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feedbackContainer"></div>
+
+            <div class="situation-card" id="situationCard">
+                <div class="situation-title" id="situationTitle"></div>
+                <div class="situation-location" id="situationLocation"></div>
+                <div class="situation-desc" id="situationDesc"></div>
+                <div class="choices-container" id="choicesContainer"></div>
+            </div>
+        </div>
+
+        <div class="game-card hidden" id="gameOverScreen">
+            <div class="game-over" id="gameOverContent">
+                <h2 id="gameOverTitle"></h2>
+                <p id="gameOverMessage"></p>
+                <button class="btn-primary" onclick="location.reload()">Jogar Novamente</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const coastalCities = ['Marataízes', 'Itaipava', 'Presidente Kennedy', 'Piúma', 'Iconha', 'Anchieta', 'Itapemirim'];
+        
+        function getRandomCity() {
+            return coastalCities[Math.floor(Math.random() * coastalCities.length)];
+        }
+
+        const situations = [
+            // EVENTOS CRÍTICOS (8 eventos)
+            {
+                title: '⚠️ DILEMA CRÍTICO: Ciclone Categoria 4',
+                desc: 'Um ciclone devastador se aproxima! Você tem recursos limitados: pode evacuar TODA a cidade costeira (50 mil pessoas) deixando o porto desprotegido, ou proteger o porto (vital para economia regional) evacuando apenas 30% da população. O que fazer?',
+                critical: true,
+                choices: [
+                    { text: 'Evacuar toda a população', cost: '💰 -80', effect: { budget: -80, sea: 15, community: 40, lives: 50 }, feedback: 'Todas as 50 mil pessoas foram salvas, mas o porto foi destruído. A economia regional sofrerá por anos.', type: 'neutral' },
+                    { text: 'Proteger o porto e evacuar 30%', cost: '💰 -50', effect: { budget: -50, sea: 5, community: -30, lives: 15, livesLost: 12 }, feedback: 'O porto foi salvo e 15 mil pessoas evacuadas, mas 12 mil ficaram expostas ao ciclone. Famílias perderam entes queridos.', type: 'negative' },
+                    { text: 'Pedir ajuda federal emergencial', cost: 'Grátis', effect: { sea: 20, community: -25, lives: 25, livesLost: 10 }, feedback: 'Ajuda federal chegou tarde. Conseguiu salvar 25 mil, mas 10 mil foram afetadas pelo ciclone.', type: 'negative' }
+                ]
+            },
+            {
+                title: '⚠️ DILEMA CRÍTICO: Represa Costeira Rachando',
+                desc: 'Uma represa que protege 3 bairros costeiros está com rachaduras críticas. Você pode: reforçar emergencialmente (arriscado, mas mantém 80 mil pessoas em suas casas), ou evacuar todos imediatamente (seguro, mas causará pânico e caos logístico).',
+                critical: true,
+                choices: [
+                    { text: 'Reforçar a represa emergencialmente', cost: '💰 -70', effect: { budget: -70, sea: -15, community: 25, lives: 80, livesLost: 3 }, feedback: 'O reforço funcionou! 80 mil pessoas mantidas em segurança, mas 3 trabalhadores se feriram gravemente na operação de risco.', type: 'positive' },
+                    { text: 'Evacuar todos imediatamente', cost: '💰 -90', effect: { budget: -90, sea: 20, community: -15, lives: 80 }, feedback: 'Todas as 80 mil pessoas foram evacuadas com segurança, mas o pânico causou acidentes e a represa acabou rompendo, inundando os bairros.', type: 'neutral' },
+                    { text: 'Usar voluntários da comunidade', cost: 'Grátis', effect: { budget: -10, sea: 25, community: 15, lives: 40, livesLost: 12 }, feedback: 'Voluntários heroicos salvaram 40 mil pessoas, mas 12 mil ficaram expostas ao rompimento.', type: 'negative' }
+                ]
+            },
+            {
+                title: '⚠️ DILEMA CRÍTICO: Tsunami Iminente',
+                desc: 'Alerta de tsunami detectado! Você tem 2 horas. Pode: usar todos os recursos para evacuar zona costeira (área densamente povoada mas acessível) OU priorizar comunidade pesqueira isolada (menor população, acesso difícil). Não há tempo para ambos.',
+                critical: true,
+                choices: [
+                    { text: 'Evacuar zona costeira densamente povoada', cost: '💰 -100', effect: { budget: -100, sea: 20, community: 30, lives: 60, livesLost: 8 }, feedback: 'Salvou 60 mil pessoas da zona costeira! Mas 8 mil pescadores da comunidade isolada não foram alcançados a tempo...', type: 'positive' },
+                    { text: 'Priorizar comunidade pesqueira isolada', cost: '💰 -60', effect: { budget: -60, sea: 25, community: -40, lives: 8, livesLost: 25 }, feedback: 'As 8 mil pessoas da comunidade isolada foram salvas, mas 25 mil da zona costeira foram atingidas. Críticas massivas à sua gestão.', type: 'negative' },
+                    { text: 'Usar sistema de alerta por sirenes', cost: 'Grátis', effect: { budget: -15, sea: 30, community: -20, lives: 25, livesLost: 20 }, feedback: 'Sistema de alerta salvou 25 mil, mas 20 mil não ouviram as sirenes a tempo.', type: 'negative' }
+                ]
+            },
+            {
+                title: '⚠️ DILEMA CRÍTICO: Escolha Impossível',
+                desc: 'Um vazamento químico ameaça contaminar o rio que abastece 100 mil pessoas. Você pode: desviar o vazamento para uma área rural (contamina 5 mil pessoas mas salva 95 mil) OU tentar conter no local (risco de contaminar todos os 100 mil se falhar).',
+                critical: true,
+                choices: [
+                    { text: 'Desviar para área rural (sacrificar 5 mil)', cost: '💰 -80', effect: { budget: -80, community: -40, lives: 95, livesLost: 5 }, feedback: 'Salvou 95 mil pessoas, mas 5 mil foram sacrificadas. Críticas internacionais.', type: 'neutral' },
+                    { text: 'Tentar conter no local (risco total)', cost: '💰 -60', effect: { budget: -60, sea: 10, community: 20, lives: 100, livesLost: 15 }, feedback: 'Conteve parcialmente, mas 15 mil pessoas foram afetadas pela contaminação.', type: 'negative' },
+                    { text: 'Evacuar apenas áreas críticas', cost: 'Grátis', effect: { budget: -20, community: -30, lives: 60, livesLost: 25 }, feedback: 'Conseguiu salvar 60 mil, mas 25 mil foram gravemente afetadas.', type: 'negative' }
+                ]
+            },
+            {
+                title: '⚠️ DILEMA CRÍTICO: Hospital vs Praia',
+                desc: 'O hospital regional precisa de expansão urgente. O único terreno disponível é uma área de restinga que protege a praia. Construir lá destrói a proteção natural, mas salva milhares de vidas.',
+                critical: true,
+                choices: [
+                    { text: 'Construir hospital (destruir restinga)', cost: '💰 -100', effect: { budget: -100, sea: 25, community: 30, lives: 50 }, feedback: 'Hospital salvará 50 mil vidas, mas a praia ficará desprotegida contra o mar.', type: 'positive' },
+                    { text: 'Preservar restinga (buscar alternativa)', cost: '💰 -50', effect: { budget: -50, sea: -10, community: -25, livesLost: 10 }, feedback: 'Preservou o ecossistema, mas 10 mil pessoas não terão acesso a cuidados médicos.', type: 'negative' },
+                    { text: 'Usar estrutura temporária', cost: 'Grátis', effect: { budget: -15, sea: 5, community: -10, lives: 15, livesLost: 8 }, feedback: 'Estrutura temporária salva 15 mil, mas 8 mil ficam sem atendimento adequado.', type: 'negative' }
+                ]
+            },
+            {
+                title: '⚠️ DILEMA CRÍTICO: Incêndio na Reserva',
+                desc: 'Um incêndio de grandes proporções atinge reserva ambiental próxima a duas comunidades. Ventos fortes espalham as chamas rapidamente. Você deve escolher qual comunidade priorizar.',
+                critical: true,
+                choices: [
+                    { text: 'Salvar comunidade turística (5000 pessoas)', cost: '💰 -75', effect: { budget: -75, community: 25, lives: 5 }, feedback: 'Comunidade turística salva, mas a outra comunidade sofreu graves perdas.', type: 'neutral' },
+                    { text: 'Salvar comunidade pesqueira (3000 pessoas)', cost: '💰 -45', effect: { budget: -45, community: -20, lives: 3, livesLost: 2 }, feedback: 'Comunidade pesqueira protegida, mas turismo afetado criticamente.', type: 'negative' },
+                    { text: 'Dividir recursos (arriscado)', cost: 'Grátis', effect: { budget: -20, community: -15, lives: 4, livesLost: 3 }, feedback: 'Conseguiu salvar parte de ambas comunidades, mas muitas vidas foram perdidas.', type: 'negative' }
+                ]
+            },
+            {
+                title: '⚠️ DILEMA CRÍTICO: Naufrágio com Carga Perigosa',
+                desc: 'Um navio carregado com produtos químicos naufragou próximo à costa. A carga está vazando e ameaça contaminar toda a vida marinha da região por décadas.',
+                critical: true,
+                choices: [
+                    { text: 'Operação de resgate completa', cost: '💰 -120', effect: { budget: -120, sea: -20, community: 35, lives: 8 }, feedback: 'Carga recuperada com sucesso! Costa protegida de desastre ambiental.', type: 'positive' },
+                    { text: 'Conter vazamento parcialmente', cost: '💰 -60', effect: { budget: -60, sea: 15, community: 10, lives: 3, livesLost: 2 }, feedback: 'Conteve parte do vazamento, mas danos ambientais significativos.', type: 'neutral' },
+                    { text: 'Isolar a área e monitorar', cost: 'Grátis', effect: { sea: 35, community: -30, livesLost: 5 }, feedback: 'Contaminação se espalhou, afetando pesca e turismo por anos.', type: 'negative' }
+                ]
+            },
+            {
+                title: '⚠️ DILEMA CRÍTICO: Colapso do Sistema de Drenagem',
+                desc: 'O sistema de drenagem da cidade entrou em colapso durante uma tempestade histórica. Bairros inteiros estão alagando rapidamente.',
+                critical: true,
+                choices: [
+                    { text: 'Reparo emergencial completo', cost: '💰 -95', effect: { budget: -95, sea: -15, community: 30, lives: 12 }, feedback: 'Sistema recuperado a tempo! Milhares de casas salvas das inundações.', type: 'positive' },
+                    { text: 'Focar nas áreas mais críticas', cost: '💰 -50', effect: { budget: -50, sea: 10, community: 5, lives: 6, livesLost: 4 }, feedback: 'Salvou as áreas mais críticas, mas bairros periféricos foram severamente afetados.', type: 'neutral' },
+                    { text: 'Abrigos temporários', cost: 'Grátis', effect: { budget: -25, sea: 25, community: -25, lives: 3, livesLost: 8 }, feedback: 'Muitas famílias perderam suas casas e pertences nas inundações.', type: 'negative' }
+                ]
+            },
+
+            // EVENTOS NORMAIS (22 eventos)
+            {
+                title: 'Ressaca Severa na Costa',
+                desc: 'Uma forte ressaca está atingindo o litoral, causando erosão nas praias e ameaçando casas próximas ao mar. Moradores estão preocupados e pressionam por uma solução urgente.',
+                choices: [
+                    { text: 'Construir quebra-mar emergencial', cost: '💰 -45', effect: { budget: -45, sea: -15, community: 15, lives: 8 }, feedback: 'O quebra-mar protegeu a costa e tranquilizou a população!', type: 'positive' },
+                    { text: 'Evacuar temporariamente as famílias', cost: '💰 -25', effect: { budget: -25, sea: 5, community: 10, lives: 5 }, feedback: 'Famílias foram protegidas, mas a erosão continuou.', type: 'neutral' },
+                    { text: 'Monitorar e não agir agora', cost: 'Grátis', effect: { sea: 12, community: -20, livesLost: 3 }, feedback: 'A situação piorou e a comunidade perdeu a confiança em você.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Proposta de Restauração de Manguezais',
+                desc: 'Cientistas propõem um projeto de reflorestamento de manguezais, que atuariam como barreira natural contra o avanço do mar.',
+                choices: [
+                    { text: 'Investir no projeto completo', cost: '💰 -55', effect: { budget: -55, sea: -20, community: 20, lives: 12 }, feedback: 'Os manguezais estão crescendo e protegendo a costa!', type: 'positive' },
+                    { text: 'Fazer projeto piloto menor', cost: '💰 -30', effect: { budget: -30, sea: -8, community: 8, lives: 4 }, feedback: 'O projeto piloto mostrou resultados promissores.', type: 'neutral' },
+                    { text: 'Recusar o projeto', cost: 'Grátis', effect: { sea: 8, community: -15, livesLost: 2 }, feedback: 'Ambientalistas criticaram duramente a decisão.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Construções Irregulares',
+                desc: 'Fiscalização descobriu construções irregulares próximas ao mar, em área de preservação. Proprietários são influentes localmente.',
+                choices: [
+                    { text: 'Demolir todas as construções', cost: '💰 -40', effect: { budget: -40, sea: -12, community: -25, lives: 6 }, feedback: 'Ação impopular, mas necessária para preservar a costa.', type: 'neutral' },
+                    { text: 'Negociar realocação gradual', cost: '💰 -50', effect: { budget: -50, sea: -8, community: 5, lives: 8 }, feedback: 'Acordo diplomático preservou a área e manteve a paz.', type: 'positive' },
+                    { text: 'Legalizar as construções', cost: 'Grátis', effect: { budget: 15, sea: 15, community: -10, livesLost: 4 }, feedback: 'Ganho político imediato, mas dano ambiental permanente.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Tempestade se Aproxima',
+                desc: 'Previsão meteorológica alerta para uma tempestade tropical que atingirá a região em 48 horas.',
+                choices: [
+                    { text: 'Ativar plano de emergência completo', cost: '💰 -50', effect: { budget: -50, community: 25, lives: 20 }, feedback: 'Preparação salvou vidas e minimizou danos!', type: 'positive' },
+                    { text: 'Alertar população básico', cost: '💰 -20', effect: { budget: -20, sea: 10, community: 5, lives: 8, livesLost: 3 }, feedback: 'Houve alguns danos e vítimas, mas poderia ser pior.', type: 'neutral' },
+                    { text: 'Apenas emitir comunicado', cost: 'Grátis', effect: { sea: 18, budget: -20, community: -30, livesLost: 10 }, feedback: 'Danos graves! População se sentiu abandonada e 10 mil pessoas foram afetadas.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Projeto de Turismo Sustentável',
+                desc: 'Empresários propõem criar polo de ecoturismo nas praias, com compromisso de preservação ambiental.',
+                choices: [
+                    { text: 'Apoiar com investimento municipal', cost: '💰 -40', effect: { budget: 20, community: 20, lives: 5 }, feedback: 'Turismo trouxe retorno financeiro e desenvolvimento!', type: 'positive' },
+                    { text: 'Permitir mas sem investir', cost: 'Grátis', effect: { budget: 10, community: 10 }, feedback: 'Projeto avançou lentamente com recursos privados.', type: 'neutral' },
+                    { text: 'Rejeitar o projeto', cost: 'Grátis', effect: { community: -15 }, feedback: 'Empresários frustrados com a falta de apoio.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Erosão em Praia Principal',
+                desc: 'A praia mais movimentada está perdendo 2 metros de areia por mês. Restaurantes e quiosques estão ameaçados.',
+                choices: [
+                    { text: 'Fazer reposição de areia', cost: '💰 -35', effect: { budget: -35, sea: -10, community: 20 }, feedback: 'Praia restaurada, comércio salvo!', type: 'positive' },
+                    { text: 'Construir estruturas de contenção', cost: '💰 -45', effect: { budget: -45, sea: -18, community: 15 }, feedback: 'Solução duradoura protegeu a praia!', type: 'positive' },
+                    { text: 'Deixar processo natural', cost: 'Grátis', effect: { sea: 10, budget: -15, community: -25 }, feedback: 'Comércios fecharam e turismo despencou.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'El Niño Intenso',
+                desc: 'El Niño está provocando elevação da temperatura do oceano e ondas mais altas na região.',
+                choices: [
+                    { text: 'Criar força-tarefa de monitoramento', cost: '💰 -20', effect: { budget: -20, sea: 5, community: 15 }, feedback: 'Dados ajudaram no planejamento!', type: 'positive' },
+                    { text: 'Reforçar estruturas existentes', cost: '💰 -30', effect: { budget: -30, sea: -8, community: 10 }, feedback: 'Infraestrutura resistiu melhor aos impactos.', type: 'positive' },
+                    { text: 'Apenas aguardar passar', cost: 'Grátis', effect: { sea: 15, community: -15 }, feedback: 'Impactos foram severos e causaram muito dano.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Vazamento de Esgoto',
+                desc: 'Sistema de tratamento falhou e está despejando esgoto próximo às praias. Turistas estão deixando a região.',
+                choices: [
+                    { text: 'Reparo emergencial imediato', cost: '💰 -40', effect: { budget: -40, community: 20 }, feedback: 'Problema resolvido rapidamente!', type: 'positive' },
+                    { text: 'Reparo gradual em 2 semanas', cost: '💰 -20', effect: { budget: -20, sea: 5, community: -10 }, feedback: 'Danos à imagem continuaram durante o reparo.', type: 'neutral' },
+                    { text: 'Minimizar problema', cost: 'Grátis', effect: { sea: 8, community: -30, budget: -10 }, feedback: 'Escândalo de saúde pública manchou sua gestão!', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Recifes Artificiais',
+                desc: 'Universidade propõe instalar recifes artificiais para reduzir força das ondas e criar habitat marinho.',
+                choices: [
+                    { text: 'Financiar projeto experimental', cost: '💰 -35', effect: { budget: -35, sea: -15, community: 18 }, feedback: 'Recifes funcionaram! Ondas reduziram!', type: 'positive' },
+                    { text: 'Apoiar com contrapartida reduzida', cost: '💰 -15', effect: { budget: -15, sea: -5, community: 8 }, feedback: 'Projeto menor mostrou potencial.', type: 'neutral' },
+                    { text: 'Não participar', cost: 'Grátis', effect: { community: -10 }, feedback: 'Universidade buscou financiamento em outra região.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Plano de Evacuação',
+                desc: 'Moradores de área de risco exigem plano oficial de evacuação para emergências climáticas.',
+                choices: [
+                    { text: 'Criar plano completo com abrigos', cost: '💰 -30', effect: { budget: -30, community: 30 }, feedback: 'População se sente muito mais segura!', type: 'positive' },
+                    { text: 'Fazer orientações básicas', cost: '💰 -10', effect: { budget: -10, community: 10 }, feedback: 'Informações tranquilizaram parcialmente.', type: 'neutral' },
+                    { text: 'Dizer que não há risco', cost: 'Grátis', effect: { community: -25 }, feedback: 'Comunidade sentiu descaso e perdeu confiança.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Invasão de Água Salgada',
+                desc: 'O avanço do mar está salinizando poços de água doce que abastecem comunidades costeiras. Agricultores estão perdendo suas plantações.',
+                choices: [
+                    { text: 'Instalar sistema de dessalinização', cost: '💰 -60', effect: { budget: -60, sea: -10, community: 25, lives: 8 }, feedback: 'Sistema fornece água potável para a comunidade!', type: 'positive' },
+                    { text: 'Perfurar poços mais profundos', cost: '💰 -35', effect: { budget: -35, sea: 5, community: 10, lives: 4 }, feedback: 'Solução temporária, mas aliviou a crise.', type: 'neutral' },
+                    { text: 'Distribuir água mineral', cost: 'Grátis', effect: { budget: -15, community: -15, livesLost: 3 }, feedback: 'Solução paliativa não resolveu o problema de fundo.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Projeto de Energia das Ondas',
+                desc: 'Empresa propõe instalar geradores que convertem a força das ondas em energia limpa, mas pode alterar as correntes marinhas.',
+                choices: [
+                    { text: 'Aprovar com estudos ambientais', cost: '💰 -45', effect: { budget: 30, sea: -5, community: 15 }, feedback: 'Energia limpa gerada sem impactos significativos!', type: 'positive' },
+                    { text: 'Aprovar sem restrições', cost: '💰 -20', effect: { budget: 40, sea: 10, community: -10 }, feedback: 'Ganho financeiro, mas alterações nas correntes preocupam.', type: 'neutral' },
+                    { text: 'Rejeitar por precaução', cost: 'Grátis', effect: { community: 5 }, feedback: 'Decisão conservadora agradou ambientalistas.', type: 'neutral' }
+                ]
+            },
+            {
+                title: 'Fenômeno de Maré Vermelha',
+                desc: 'Proliferação de algas tóxicas está matando peixes e tornando as praias perigosas para banho.',
+                choices: [
+                    { text: 'Fechar praias e investigar causas', cost: '💰 -25', effect: { budget: -25, community: 15, lives: 5 }, feedback: 'Medida preventiva protegeu a população!', type: 'positive' },
+                    { text: 'Monitorar sem fechar praias', cost: '💰 -10', effect: { budget: -10, community: -10, livesLost: 2 }, feedback: 'Algumas pessoas foram intoxicadas.', type: 'negative' },
+                    { text: 'Ignorar como evento natural', cost: 'Grátis', effect: { sea: 5, community: -25, livesLost: 5 }, feedback: 'Crise de saúde pública e turismo afetado.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Projeto de Educação Ambiental',
+                desc: 'Escolas locais querem implementar programa de conscientização sobre proteção costeira para crianças.',
+                choices: [
+                    { text: 'Financiar programa completo', cost: '💰 -20', effect: { budget: -20, community: 30 }, feedback: 'Futuras gerações mais conscientes!', type: 'positive' },
+                    { text: 'Apoiar com materiais básicos', cost: '💰 -8', effect: { budget: -8, community: 15 }, feedback: 'Contribuição modesta, mas bem-vinda.', type: 'neutral' },
+                    { text: 'Delegar para iniciativa privada', cost: 'Grátis', effect: { community: -5 }, feedback: 'Oportunidade perdida de engajar a comunidade.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Crise nos Molhes da Barra',
+                desc: 'Os molhes que protegem a barra do porto estão se deteriorando rapidamente, ameaçando a navegação.',
+                choices: [
+                    { text: 'Reconstruir completamente', cost: '💰 -70', effect: { budget: -70, sea: -12, community: 20 }, feedback: 'Infraestrutura portuária protegida!', type: 'positive' },
+                    { text: 'Reparos emergenciais', cost: '💰 -35', effect: { budget: -35, sea: 3, community: 8 }, feedback: 'Solução temporária implementada.', type: 'neutral' },
+                    { text: 'Fechar o porto temporariamente', cost: 'Grátis', effect: { budget: -50, community: -30 }, feedback: 'Prejuízo econômico significativo.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Projeto de Corredor Ecológico',
+                desc: 'Biólogos propõem conectar fragmentos de mata atlântica para proteger a biodiversidade costeira.',
+                choices: [
+                    { text: 'Criar corredor completo', cost: '💰 -40', effect: { budget: -40, sea: -8, community: 25 }, feedback: 'Ecossistema fortalecido contra mudanças climáticas!', type: 'positive' },
+                    { text: 'Proteger áreas existentes', cost: '💰 -20', effect: { budget: -20, sea: -3, community: 12 }, feedback: 'Medida conservadora mas eficaz.', type: 'neutral' },
+                    { text: 'Priorizar desenvolvimento', cost: 'Grátis', effect: { sea: 8, community: -20 }, feedback: 'Perda de biodiversidade preocupa cientistas.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Crise na Pesca Artesanal',
+                desc: 'Pescadores tradicionais estão sem peixes devido às mudanças nas correntes marinhas. Famílias passam necessidade.',
+                choices: [
+                    { text: 'Programa de renda básica temporária', cost: '💰 -30', effect: { budget: -30, community: 35, lives: 3 }, feedback: 'Comunidade pesqueira apoiada durante a crise!', type: 'positive' },
+                    { text: 'Capacitação para outras atividades', cost: '💰 -18', effect: { budget: -18, community: 18 }, feedback: 'Alternativas econômicas sendo desenvolvidas.', type: 'neutral' },
+                    { text: 'Deixar mercado se ajustar', cost: 'Grátis', effect: { community: -25, livesLost: 2 }, feedback: 'Famílias pesqueiras em situação crítica.', type: 'negative' }
+                ]
+            },
+            // NOVOS EVENTOS ADICIONADOS
+            {
+                title: 'Projeto de Dunas Artificiais',
+                desc: 'Engenheiros propõem criar dunas artificiais para proteger a costa da erosão. As dunas seriam vegetadas com plantas nativas.',
+                choices: [
+                    { text: 'Implementar projeto completo', cost: '💰 -38', effect: { budget: -38, sea: -12, community: 18 }, feedback: 'Dunas estão protegendo a costa eficazmente!', type: 'positive' },
+                    { text: 'Fazer teste em área pequena', cost: '💰 -18', effect: { budget: -18, sea: -4, community: 8 }, feedback: 'Teste promissor, mas proteção limitada.', type: 'neutral' },
+                    { text: 'Não investir agora', cost: 'Grátis', effect: { sea: 6, community: -8 }, feedback: 'Oportunidade perdida de proteção costeira.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Contaminação por Microplásticos',
+                desc: 'Estudo revela altos níveis de microplásticos nas praias, afetando a vida marinha e potencialmente a saúde humana.',
+                choices: [
+                    { text: 'Programa de limpeza avançado', cost: '💰 -28', effect: { budget: -28, sea: -6, community: 22 }, feedback: 'Praias significativamente mais limpas!', type: 'positive' },
+                    { text: 'Campanha educativa básica', cost: '💰 -12', effect: { budget: -12, community: 12 }, feedback: 'Conscientização ajudou, mas problema persiste.', type: 'neutral' },
+                    { text: 'Aguardar estudos adicionais', cost: 'Grátis', effect: { sea: 4, community: -12 }, feedback: 'Problema se agravou durante a espera.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Sistema de Alerta de Ressacas',
+                desc: 'Meteorologistas propõem instalar sistema de alerta precoce para ressacas, dando tempo para preparação.',
+                choices: [
+                    { text: 'Instalar sistema completo', cost: '💰 -32', effect: { budget: -32, community: 25, lives: 6 }, feedback: 'Sistema salvou vidas durante ressacas recentes!', type: 'positive' },
+                    { text: 'Sistema básico com voluntários', cost: '💰 -15', effect: { budget: -15, community: 12, lives: 2 }, feedback: 'Sistema limitado mas útil.', type: 'neutral' },
+                    { text: 'Usar alertas existentes', cost: 'Grátis', effect: { community: -8 }, feedback: 'Falta de preparação causou danos evitáveis.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Crise no Abastecimento de Energia',
+                desc: 'Tempestade danificou linhas de transmissão, deixando comunidades costeiras sem energia por dias.',
+                choices: [
+                    { text: 'Reparo emergencial completo', cost: '💰 -42', effect: { budget: -42, community: 20 }, feedback: 'Energia restaurada rapidamente!', type: 'positive' },
+                    { text: 'Reparos prioritários apenas', cost: '💰 -22', effect: { budget: -22, community: 8 }, feedback: 'Algumas áreas ficaram sem energia por mais tempo.', type: 'neutral' },
+                    { text: 'Aguardar conserto normal', cost: 'Grátis', effect: { community: -18 }, feedback: 'Comunidade ficou indignada com a demora.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Projeto de Pesquisa Oceanográfica',
+                desc: 'Universidade quer instalar base de pesquisa para monitorar mudanças climáticas no litoral.',
+                choices: [
+                    { text: 'Apoiar financeiramente', cost: '💰 -25', effect: { budget: -25, sea: -3, community: 15 }, feedback: 'Pesquisa gerou dados valiosos para proteção costeira!', type: 'positive' },
+                    { text: 'Ceder espaço sem custo', cost: 'Grátis', effect: { community: 8 }, feedback: 'Pesquisa avançou com recursos limitados.', type: 'neutral' },
+                    { text: 'Não apoiar', cost: 'Grátis', effect: { community: -10 }, feedback: 'Universidade levou projeto para outro estado.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Problema com Espécies Invasoras',
+                desc: 'Espécie marinha invasora está ameaçando o ecossistema local e afetando a pesca tradicional.',
+                choices: [
+                    { text: 'Programa de controle integrado', cost: '💰 -34', effect: { budget: -34, sea: -7, community: 16 }, feedback: 'Espécie invasora controlada com sucesso!', type: 'positive' },
+                    { text: 'Controle limitado', cost: '💰 -16', effect: { budget: -16, community: 6 }, feedback: 'Problema contido parcialmente.', type: 'neutral' },
+                    { text: 'Deixar equilíbrio natural', cost: 'Grátis', effect: { sea: 8, community: -14 }, feedback: 'Espécie invasora se proliferou rapidamente.', type: 'negative' }
+                ]
+            },
+            {
+                title: 'Modernização do Sistema de Meteorologia',
+                desc: 'Tecnologia obsoleta impede previsões precisas do tempo, crucial para a segurança costeira.',
+                choices: [
+                    { text: 'Atualizar sistema completo', cost: '💰 -48', effect: { budget: -48, community: 20, lives: 4 }, feedback: 'Previsões precisas salvaram vidas!', type: 'positive' },
+                    { text: 'Atualização parcial', cost: '💰 -24', effect: { budget: -24, community: 10 }, feedback: 'Melhora modesta nas previsões.', type: 'neutral' },
+                    { text: 'Manter sistema atual', cost: 'Grátis', effect: { community: -12 }, feedback: 'Falhas nas previsões causaram prejuízos.', type: 'negative' }
+                ]
+            }
+        ];
+
+        let gameState = {
+            playerName: '',
+            year: 1,
+            budget: 100,
+            community: 100,
+            seaLevel: 30,
+            usedSituations: [],
+            livesSaved: 0,
+            livesLost: 0
+        };
+
+        function startGame() {
+            const name = document.getElementById('playerName').value.trim();
+            if (!name) {
+                alert('Por favor, digite seu nome!');
+                return;
+            }
+            
+            gameState.playerName = name;
+            document.getElementById('playerNameDisplay').textContent = name;
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            
+            loadNewSituation();
+        }
+
+        function loadNewSituation() {
+            // AJUSTADO: Eventos críticos aparecem mais cedo (20% de chance geral, 40% em anos múltiplos de 3)
+            const criticalChance = gameState.year % 3 === 0 ? 0.4 : 0.2;
+            
+            let availableSituations = situations.filter(
+                (_, index) => !gameState.usedSituations.includes(index)
+            );
+            
+            // Se acabaram situações, reinicia o pool
+            if (availableSituations.length === 0) {
+                gameState.usedSituations = [];
+                availableSituations = situations;
+            }
+            
+            // Filtrar eventos críticos
+            const criticalSituations = availableSituations.filter(s => s.critical);
+            const normalSituations = availableSituations.filter(s => !s.critical);
+            
+            let situation;
+            if (Math.random() < criticalChance && criticalSituations.length > 0) {
+                situation = criticalSituations[Math.floor(Math.random() * criticalSituations.length)];
+            } else {
+                situation = normalSituations[Math.floor(Math.random() * normalSituations.length)];
+            }
+            
+            const situationIndex = situations.indexOf(situation);
+            gameState.usedSituations.push(situationIndex);
+            
+            // Destacar eventos críticos
+            const situationCard = document.getElementById('situationCard');
+            const titleElement = document.getElementById('situationTitle');
+            
+            titleElement.textContent = situation.title;
+            if (situation.critical) {
+                situationCard.classList.add('critical');
+                titleElement.style.color = '#e74c3c';
+                titleElement.style.fontSize = '1.5rem';
+            } else {
+                situationCard.classList.remove('critical');
+                titleElement.style.color = '#2c3e50';
+                titleElement.style.fontSize = '1.3rem';
+            }
+            
+            document.getElementById('situationLocation').textContent = '📍 ' + getRandomCity();
+            document.getElementById('situationDesc').textContent = situation.desc;
+            
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+            
+            situation.choices.forEach((choice, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                
+                // Calcular custo da escolha
+                const costMatch = choice.cost.match(/💰 -(\d+)/);
+                const cost = costMatch ? parseInt(costMatch[1]) : 0;
+                
+                // Desabilitar botão se não tiver orçamento suficiente (exceto opções grátis)
+                if (cost > gameState.budget && cost > 0) {
+                    btn.classList.add('disabled');
+                }
+                
+                btn.innerHTML = `
+                    <span>${choice.text}</span>
+                    <span class="choice-cost">${choice.cost}</span>
+                `;
+                
+                if (!btn.classList.contains('disabled')) {
+                    btn.onclick = () => makeChoice(choice);
+                }
+                
+                choicesContainer.appendChild(btn);
+            });
+            
+            updateDisplay();
+        }
+
+        function makeChoice(choice) {
+            // Verificar novamente se tem orçamento (segurança extra)
+            const costMatch = choice.cost.match(/💰 -(\d+)/);
+            const cost = costMatch ? parseInt(costMatch[1]) : 0;
+            
+            if (cost > gameState.budget && cost > 0) {
+                showFeedback('❌ Orçamento insuficiente para esta ação!', 'negative');
+                return;
+            }
+            
+            applyEffects(choice.effect);
+            showFeedback(choice.feedback, choice.type);
+            
+            setTimeout(() => {
+                advanceYear();
+            }, 2000);
+        }
+
+        function applyEffects(effect) {
+            if (effect.budget) gameState.budget += effect.budget;
+            if (effect.community) gameState.community += effect.community;
+            if (effect.sea) gameState.seaLevel += effect.sea;
+            if (effect.lives) gameState.livesSaved += effect.lives;
+            if (effect.livesLost) gameState.livesLost += effect.livesLost;
+            
+            gameState.budget = Math.max(0, Math.min(300, gameState.budget));
+            gameState.community = Math.max(0, Math.min(200, gameState.community));
+            gameState.seaLevel = Math.max(0, Math.min(100, gameState.seaLevel));
+            
+            updateDisplay();
+        }
+
+        function showFeedback(message, type) {
+            const container = document.getElementById('feedbackContainer');
+            container.innerHTML = `<div class="feedback-message ${type}">${message}</div>`;
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 3000);
+        }
+
+        function advanceYear() {
+            gameState.year++;
+            
+            // ORÇAMENTO AUMENTADO: 18% do apoio comunitário
+            const budgetIncrease = Math.floor(gameState.community * 0.18);
+            gameState.budget += budgetIncrease;
+            gameState.budget = Math.min(300, gameState.budget);
+            
+            // Custo de manutenção
+            const maintenanceCost = Math.floor(gameState.year * 0.8);
+            gameState.budget -= maintenanceCost;
+            
+            if (budgetIncrease > 0 || maintenanceCost > 0) {
+                let maintenanceMsg = '';
+                if (maintenanceCost > 0) {
+                    maintenanceMsg = ` | Custo de manutenção: -${maintenanceCost}`;
+                }
+                showFeedback(`📈 Orçamento +${budgetIncrease}${maintenanceMsg}`, 'neutral');
+            }
+            
+            updateDisplay();
+            
+            if (checkGameOver()) {
+                return;
+            }
+            
+            setTimeout(() => {
+                loadNewSituation();
+            }, 1500);
+        }
+
+        function updateDisplay() {
+            document.getElementById('yearDisplay').textContent = gameState.year;
+            
+            const budgetBar = document.getElementById('budgetBar');
+            budgetBar.textContent = Math.round(gameState.budget);
+            budgetBar.style.width = Math.min(100, (gameState.budget / 300) * 100) + '%';
+            
+            const communityBar = document.getElementById('communityBar');
+            communityBar.textContent = Math.round(gameState.community) + '%';
+            communityBar.style.width = Math.min(100, (gameState.community / 200) * 100) + '%';
+            
+            const seaBar = document.getElementById('seaBar');
+            seaBar.textContent = Math.round(gameState.seaLevel) + '%';
+            seaBar.style.width = gameState.seaLevel + '%';
+            
+            // Atualizar contador de vidas
+            document.getElementById('livesSaved').textContent = gameState.livesSaved;
+            document.getElementById('livesLost').textContent = gameState.livesLost;
+        }
+
+        function checkGameOver() {
+            if (gameState.seaLevel >= 85) {
+                endGame(false, 'O nível do mar atingiu níveis críticos! As cidades costeiras do litoral sul capixaba sofreram graves danos. Milhares de famílias foram afetadas.');
+                return true;
+            }
+            
+            if (gameState.budget <= 0 && gameState.community <= 20) {
+                endGame(false, 'Sem recursos e apoio da comunidade, não foi possível continuar as ações de proteção costeira. Sua gestão terminou em fracasso.');
+                return true;
+            }
+            
+            if (gameState.year > 25) {
+                if (gameState.seaLevel < 50 && gameState.community > 60) {
+                    endGame(true, 'Parabéns! Você conseguiu gerenciar com sucesso o litoral sul capixaba durante 25 anos! As cidades costeiras estão protegidas e a população confia em você!');
+                } else {
+                    endGame(false, 'Sua gestão terminou após 25 anos, mas os resultados não foram satisfatórios. O litoral precisa de mais proteção.');
+                }
+                return true;
+            }
+            
+            return false;
+        }
+
+        function endGame(victory, message) {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+            
+            const content = document.getElementById('gameOverContent');
+            content.className = victory ? 'game-over victory' : 'game-over defeat';
+            
+            const netLives = gameState.livesSaved - gameState.livesLost;
+            const livesText = netLives > 0 ? 
+                `salvou <strong>${netLives} mil vidas</strong>` : 
+                `não conseguiu salvar vidas suficientes (saldo: ${netLives} mil)`;
+            
+            document.getElementById('gameOverTitle').textContent = victory ? '🎉 Vitória!' : '😔 Fim de Jogo';
+            document.getElementById('gameOverMessage').innerHTML = `
+                ${message}
+                <br><br>
+                <strong>📊 Estatísticas da sua gestão:</strong><br>
+                👥 <strong>Vidas salvas:</strong> ${gameState.livesSaved} mil pessoas<br>
+                💔 <strong>Vidas perdidas:</strong> ${gameState.livesLost} mil pessoas<br>
+                📈 <strong>Saldo final:</strong> Você ${livesText}<br>
+                🌊 <strong>Nível do mar final:</strong> ${Math.round(gameState.seaLevel)}%<br>
+                🤝 <strong>Apoio comunitário:</strong> ${Math.round(gameState.community)}%
+                <br><br>
+                <strong>🌍 IMPACTOS DO AUMENTO DO NÍVEL DO MAR NO LITORAL SUL-CAPIXABA:</strong><br><br>
+                
+                <strong>📍 MARATAÍZES:</strong><br>
+                • Cidade mais vulnerável à erosão costeira<br>
+                • Falésias em risco de desmoronamento<br>
+                • Áreas turísticas ameaçadas pelo avanço do mar<br>
+                • Projeção: pode perder 40% de suas praias até 2050<br><br>
+                
+                <strong>📍 ITAIPAVA:</strong><br>
+                • Manguezais críticos para proteção costeira<br>
+                • Ecossistemas únicos em risco<br>
+                • Agricultura costeira ameaçada pela salinização<br>
+                • Comunidades pesqueiras vulneráveis<br><br>
+                
+                <strong>📍 PRESIDENTE KENNEDY:</strong><br>
+                • Áreas baixas propensas a inundações<br>
+                • Infraestrutura portuária em risco<br>
+                • Solo agrícola ameaçado pela água salgada<br>
+                • Necessidade urgente de proteção costeira<br><br>
+                
+                <strong>🔬 CONSEQUÊNCIAS REAIS:</strong><br>
+                • <strong>Erosão Costeira:</strong> Perda de 2-3 metros de faixa de areia por ano<br>
+                • <strong>Inundações Permanentes:</strong> Áreas baixas podem ser submersas com elevação de 1m<br>
+                • <strong>Salinização:</strong> Contaminação de lençóis freáticos e solos agrícolas<br>
+                • <strong>Destruição de Ecossistemas:</strong> Manguezais e restingas são barreiras naturais vitais<br>
+                • <strong>Impacto Econômico:</strong> Turismo, pesca e comércio local severamente afetados<br>
+                • <strong>Deslocamento Populacional:</strong> Milhares de famílias podem precisar ser realocadas<br><br>
+                
+                <strong>🛡️ AÇÕES DE PREVENÇÃO RECOMENDADAS:</strong><br>
+                • Restauração de manguezais e restingas<br>
+                • Construção de quebra-mares sustentáveis<br>
+                • Zoneamento costeiro inteligente<br>
+                • Sistemas de alerta precoce para eventos extremos<br>
+                • Educação ambiental das comunidades locais<br><br>
+                
+                <em>Projeções científicas indicam que, sem ações efetivas, o litoral capixaba pode perder 30-40% de suas praias atuais até 2050.</em>
+            `;
+        }
+
+        // Event Listeners
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        
+        document.getElementById('playerName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+        });
+    </script>
+</body>
+</html>

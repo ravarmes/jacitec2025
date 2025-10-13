@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Coral de Guarapari 🪸</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            overflow-x: hidden;
+            background: linear-gradient(180deg, #1a5f7a 0%, #002b3d 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+        }
+
+        #gameContainer {
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 900px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, #1a5f7a 0%, #0a3d52 50%, #002b3d 100%);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            
+            #gameContainer {
+                border-radius: 20px;
+                height: 90vh;
+                max-height: 850px;
+            }
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: rise 15s infinite ease-in;
+            pointer-events: none;
+        }
+
+        @keyframes rise {
+            to {
+                bottom: 110%;
+                transform: translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        #startScreen, #winScreen, #minigameScreen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        #startScreen {
+            background: linear-gradient(180deg, #1a5f7a 0%, #002b3d 100%);
+        }
+
+        #winScreen {
+            background: linear-gradient(180deg, #06d6a0 0%, #118ab2 100%);
+            display: none;
+        }
+
+        #minigameScreen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: none;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: clamp(1.8em, 5vw, 2.5em);
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            padding: 0 10px;
+        }
+
+        .screen-text {
+            color: #a8dadc;
+            font-size: clamp(0.9em, 3vw, 1.1em);
+            text-align: center;
+            margin-bottom: 30px;
+            max-width: 350px;
+            line-height: 1.5;
+            padding: 0 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border: none;
+            padding: 16px 35px;
+            font-size: clamp(1.2em, 4vw, 1.5em);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        @media (hover: hover) {
+            .btn:hover {
+                transform: scale(1.05);
+            }
+        }
+
+        #header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 15px;
+            text-align: center;
+            color: white;
+            font-size: clamp(0.9em, 3vw, 1.3em);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        #stageInfo {
+            font-size: 0.85em;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        #growthProgress {
+            font-size: 0.7em;
+            color: #ffd166;
+            margin-top: 3px;
+        }
+
+        #statusBars {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .statusBar {
+            margin-bottom: 8px;
+        }
+
+        .statusLabel {
+            color: #fff;
+            font-size: clamp(0.8em, 2.5vw, 0.9em);
+            margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .barContainer {
+            width: 100%;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .barFill {
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 8px;
+        }
+
+        #happinessBar { background: linear-gradient(90deg, #ffd166, #ff6b6b); }
+        #cleanBar { background: linear-gradient(90deg, #06d6a0, #118ab2); }
+        #energyBar { background: linear-gradient(90deg, #ff6b6b, #ee5a6f); }
+        #healthBar { background: linear-gradient(90deg, #4ecdc4, #44a08d); }
+
+        #coralArea {
+            position: relative;
+            height: clamp(240px, 35vh, 350px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        #coral {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.8s ease;
+            filter: brightness(0.5) saturate(0.3);
+        }
+
+        #coral.healthy {
+            filter: brightness(1.1) saturate(1.3) drop-shadow(0 0 15px rgba(255,107,107,0.6));
+            animation: gentleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes gentleGlow {
+            0%, 100% { 
+                filter: brightness(1.1) saturate(1.3) drop-shadow(0 0 15px rgba(255,107,107,0.6)); 
+            }
+            50% { 
+                filter: brightness(1.2) saturate(1.4) drop-shadow(0 0 25px rgba(255,107,107,0.9)); 
+            }
+        }
+
+        /* EMBRIÃO - Simples e pequeno */
+        #coral.embryo { 
+            width: 50px; 
+            height: 50px;
+        }
+
+        #coral.embryo .coralBody {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, #ffcccb, #ff9999, #ff7878);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 
+                inset -5px -5px 10px rgba(0,0,0,0.2),
+                0 5px 15px rgba(0,0,0,0.3);
+            animation: embryoPulse 2s ease-in-out infinite;
+        }
+
+        #coral.embryo .coralBody::after {
+            content: '•';
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5em;
+            color: rgba(139, 0, 0, 0.3);
+        }
+
+        @keyframes embryoPulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* BEBÊ - Coral globular com textura */
+        #coral.baby { 
+            width: 90px; 
+            height: 90px;
+        }
+
+        #coral.baby .coralBody {
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(255,255,255,0.3) 2px, transparent 2px),
+                radial-gradient(circle at 60% 40%, rgba(255,255,255,0.2) 3px, transparent 3px),
+                radial-gradient(circle at 40% 70%, rgba(255,255,255,0.2) 2px, transparent 2px),
+                linear-gradient(135deg, #ff8787, #ffa3a3);
+            background-size: 100%;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 
+                inset -8px -8px 15px rgba(0,0,0,0.3),
+                0 5px 20px rgba(0,0,0,0.4);
+        }
+
+        #coral.baby .coralBody::before {
+            content: '';
+            position: absolute;
+            width: 20%;
+            height: 20%;
+            background: rgba(255,200,200,0.6);
+            border-radius: 50%;
+            top: 25%;
+            left: 25%;
+            box-shadow: 
+                30px 20px 0 rgba(255,200,200,0.5),
+                10px 40px 0 rgba(255,200,200,0.4);
+        }
+
+        /* Face para todos os estágios - Estilo simples e fofo */
+        .eye {
+            width: 10px;
+            height: 10px;
+            background: #2d3142;
+            border-radius: 50%;
+            position: absolute;
+            top: 38%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        #coral.embryo .eye {
+            width: 8px;
+            height: 8px;
+        }
+
+        #coral.baby .eye {
+            width: 12px;
+            height: 12px;
+        }
+
+        .eye.left { left: 32%; }
+        .eye.right { right: 32%; }
+
+        .pupil {
+            display: none;
+        }
+
+        .shine {
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+        }
+
+        #coral.embryo .shine {
+            width: 3px;
+            height: 3px;
+        }
+
+        #coral.baby .shine {
+            width: 4px;
+            height: 4px;
+        }
+
+        .mouth {
+            width: 20px;
+            height: 10px;
+            border: 2px solid #ff6b9d;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+            position: absolute;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        #coral.embryo .mouth {
+            width: 16px;
+            height: 8px;
+            bottom: 28%;
+        }
+
+        #coral.baby .mouth {
+            width: 22px;
+            height: 11px;
+        }
+
+        .mouth.happy {
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        .mouth.sad {
+            border-bottom: none;
+            border-top: 2px solid #ff6b9d;
+            border-radius: 20px 20px 0 0;
+            bottom: 28%;
+        }
+
+        .cheek {
+            width: 10px;
+            height: 8px;
+            background: #ffb3c6;
+            border-radius: 50%;
+            position: absolute;
+            top: 48%;
+            z-index: 10;
+            opacity: 0.7;
+        }
+
+        #coral.embryo .cheek {
+            width: 8px;
+            height: 6px;
+        }
+
+        #coral.baby .cheek {
+            width: 12px;
+            height: 9px;
+        }
+
+        .cheek.left { left: 20%; }
+        .cheek.right { right: 20%; }
+
+        /* CRIANÇA - Primeiros galhos ramificados */
+        #coral.child { 
+            width: 140px; 
+            height: 150px;
+        }
+
+        #coral.child .coralBase {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 30px;
+            background: linear-gradient(135deg, #8b7355, #6b5345);
+            border-radius: 50% 50% 40% 40%;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+        }
+
+        #coral.child .branch {
+            position: absolute;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 50%, #ffa3a3 100%);
+            border-radius: 40% 40% 50% 50%;
+            box-shadow: 
+                inset -3px -3px 8px rgba(0,0,0,0.3),
+                2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        #coral.child .branch::after {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 60%;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 1px, transparent 1px),
+                radial-gradient(circle at 70% 50%, rgba(255,255,255,0.3) 1px, transparent 1px);
+            border-radius: 50%;
+            top: 20%;
+            left: 20%;
+        }
+
+        #coral.child .branch-1 {
+            width: 40px;
+            height: 50px;
+            bottom: 25px;
+            left: 25px;
+            transform: rotate(-15deg);
+        }
+
+        #coral.child .branch-2 {
+            width: 40px;
+            height: 50px;
+            bottom: 25px;
+            right: 25px;
+            transform: rotate(15deg);
+        }
+
+        #coral.child .branch-3 {
+            width: 35px;
+            height: 45px;
+            bottom: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* ADOLESCENTE - Estrutura mais complexa */
+        #coral.teen { 
+            width: 190px; 
+            height: 190px;
+        }
+
+        #coral.teen .coralBase {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b7355, #5a4233);
+            border-radius: 50% 50% 40% 40%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        #coral.teen .trunk {
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 50px;
+            background: linear-gradient(180deg, #ff6b6b 0%, #ff5252 100%);
+            border-radius: 15px 15px 8px 8px;
+            box-shadow: 
+                inset -2px 0 5px rgba(0,0,0,0.3),
+                2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        #coral.teen .branch {
+            position: absolute;
+            background: linear-gradient(135deg, #ff5252 0%, #ff6b6b 40%, #ff8787 100%);
+            border-radius: 45% 45% 50% 50%;
+            box-shadow: 
+                inset -4px -4px 10px rgba(0,0,0,0.3),
+                3px 3px 12px rgba(0,0,0,0.3);
+        }
+
+        #coral.teen .branch::before {
+            content: '';
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(255,255,255,0.5) 2px, transparent 2px),
+                radial-gradient(circle at 65% 35%, rgba(255,255,255,0.4) 2px, transparent 2px),
+                radial-gradient(circle at 45% 65%, rgba(255,255,255,0.4) 2px, transparent 2px);
+            border-radius: 50%;
+            top: 10%;
+            left: 10%;
+        }
+
+        #coral.teen .branch-1 {
+            width: 55px;
+            height: 65px;
+            bottom: 65px;
+            left: 30px;
+            transform: rotate(-20deg);
+        }
+
+        #coral.teen .branch-2 {
+            width: 55px;
+            height: 65px;
+            bottom: 65px;
+            right: 30px;
+            transform: rotate(20deg);
+        }
+
+        #coral.teen .branch-3 {
+            width: 45px;
+            height: 55px;
+            bottom: 100px;
+            left: 25px;
+            transform: rotate(-30deg);
+        }
+
+        #coral.teen .branch-4 {
+            width: 45px;
+            height: 55px;
+            bottom: 100px;
+            right: 25px;
+            transform: rotate(30deg);
+        }
+
+        #coral.teen .branch-5 {
+            width: 50px;
+            height: 60px;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* JOVEM - Coral arborescente */
+        #coral.young { 
+            width: 250px; 
+            height: 260px;
+        }
+
+        #coral.young .coralBase {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 50px;
+            background: linear-gradient(135deg, #8b7355, #5a4233);
+            border-radius: 60% 60% 45% 45%;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        #coral.young .trunk {
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 70px;
+            background: linear-gradient(180deg, #ff6b6b 0%, #ff5252 50%, #e63946 100%);
+            border-radius: 20px 20px 10px 10px;
+            box-shadow: 
+                inset -3px 0 8px rgba(0,0,0,0.3),
+                3px 3px 15px rgba(0,0,0,0.4);
+        }
+
+        #coral.young .trunk::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(255,255,255,0.3) 2px, transparent 2px),
+                radial-gradient(circle at 70% 40%, rgba(255,255,255,0.25) 2px, transparent 2px),
+                radial-gradient(circle at 50% 70%, rgba(255,255,255,0.2) 2px, transparent 2px);
+            border-radius: 20px 20px 10px 10px;
+        }
+
+        #coral.young .branch {
+            position: absolute;
+            background: linear-gradient(135deg, #ff5252 0%, #ff6b6b 30%, #ff8787 70%, #ffa3a3 100%);
+            border-radius: 45% 45% 50% 50%;
+            box-shadow: 
+                inset -5px -5px 12px rgba(0,0,0,0.3),
+                4px 4px 15px rgba(0,0,0,0.3);
+        }
+
+        #coral.young .branch::before {
+            content: '';
+            position: absolute;
+            width: 85%;
+            height: 85%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.5) 2px, transparent 2px),
+                radial-gradient(circle at 60% 25%, rgba(255,255,255,0.4) 2px, transparent 2px),
+                radial-gradient(circle at 40% 55%, rgba(255,255,255,0.4) 2px, transparent 2px),
+                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.3) 2px, transparent 2px);
+            border-radius: 50%;
+            top: 8%;
+            left: 8%;
+        }
+
+        #coral.young .branch-1 {
+            width: 70px;
+            height: 80px;
+            bottom: 85px;
+            left: 35px;
+            transform: rotate(-18deg);
+        }
+
+        #coral.young .branch-2 {
+            width: 70px;
+            height: 80px;
+            bottom: 85px;
+            right: 35px;
+            transform: rotate(18deg);
+        }
+
+        #coral.young .branch-3 {
+            width: 60px;
+            height: 70px;
+            bottom: 130px;
+            left: 28px;
+            transform: rotate(-28deg);
+        }
+
+        #coral.young .branch-4 {
+            width: 60px;
+            height: 70px;
+            bottom: 130px;
+            right: 28px;
+            transform: rotate(28deg);
+        }
+
+        #coral.young .branch-5 {
+            width: 65px;
+            height: 75px;
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #coral.young .branch-6 {
+            width: 50px;
+            height: 60px;
+            bottom: 180px;
+            left: 40px;
+            transform: rotate(-22deg);
+        }
+
+        #coral.young .branch-7 {
+            width: 50px;
+            height: 60px;
+            bottom: 180px;
+            right: 40px;
+            transform: rotate(22deg);
+        }
+
+        /* ADULTO - Coral majestoso */
+        #coral.adult { 
+            width: 300px; 
+            height: 320px;
+        }
+
+        #coral.adult .coralBase {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            height: 65px;
+            background: linear-gradient(135deg, #8b7355, #6b5345, #5a4233);
+            border-radius: 60% 60% 45% 45%;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.5);
+        }
+
+        #coral.adult .trunk {
+            position: absolute;
+            bottom: 58px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 42px;
+            height: 90px;
+            background: linear-gradient(180deg, #ff6b6b 0%, #ff5252 40%, #e63946 80%, #d62828 100%);
+            border-radius: 25px 25px 12px 12px;
+            box-shadow: 
+                inset -4px 0 10px rgba(0,0,0,0.3),
+                4px 4px 20px rgba(0,0,0,0.4);
+        }
+
+        #coral.adult .trunk::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 25% 15%, rgba(255,255,255,0.35) 2px, transparent 2px),
+                radial-gradient(circle at 70% 25%, rgba(255,255,255,0.3) 2px, transparent 2px),
+                radial-gradient(circle at 45% 50%, rgba(255,255,255,0.25) 2px, transparent 2px),
+                radial-gradient(circle at 30% 75%, rgba(255,255,255,0.2) 2px, transparent 2px);
+            border-radius: 25px 25px 12px 12px;
+        }
+
+        #coral.adult .branch {
+            position: absolute;
+            background: linear-gradient(135deg, #ff5252 0%, #ff6b6b 25%, #ff7675 50%, #ff8787 75%, #ffa3a3 100%);
+            border-radius: 45% 45% 50% 50%;
+            box-shadow: 
+                inset -6px -6px 15px rgba(0,0,0,0.35),
+                5px 5px 18px rgba(0,0,0,0.35);
+        }
+
+        #coral.adult .branch::before {
+            content: '';
+            position: absolute;
+            width: 88%;
+            height: 88%;
+            background: 
+                radial-gradient(circle at 18% 18%, rgba(255,255,255,0.5) 2px, transparent 2px),
+                radial-gradient(circle at 55% 22%, rgba(255,255,255,0.45) 2px, transparent 2px),
+                radial-gradient(circle at 35% 48%, rgba(255,255,255,0.4) 2px, transparent 2px),
+                radial-gradient(circle at 68% 58%, rgba(255,255,255,0.35) 2px, transparent 2px),
+                radial-gradient(circle at 22% 72%, rgba(255,255,255,0.3) 2px, transparent 2px);
+            border-radius: 50%;
+            top: 6%;
+            left: 6%;
+        }
+
+        #coral.adult .branch::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 18px;
+            background: radial-gradient(circle, #ffcccb, #ffb3b3);
+            border-radius: 50%;
+            opacity: 0.9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        #coral.adult .branch-1 {
+            width: 85px;
+            height: 95px;
+            bottom: 105px;
+            left: 28px;
+            transform: rotate(-20deg);
+        }
+
+        #coral.adult .branch-2 {
+            width: 85px;
+            height: 95px;
+            bottom: 105px;
+            right: 28px;
+            transform: rotate(20deg);
+        }
+
+        #coral.adult .branch-3 {
+            width: 70px;
+            height: 80px;
+            bottom: 155px;
+            left: 18px;
+            transform: rotate(-30deg);
+        }
+
+        #coral.adult .branch-4 {
+            width: 70px;
+            height: 80px;
+            bottom: 155px;
+            right: 18px;
+            transform: rotate(30deg);
+        }
+
+        #coral.adult .branch-5 {
+            width: 75px;
+            height: 85px;
+            bottom: 165px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #coral.adult .branch-6 {
+            width: 60px;
+            height: 70px;
+            bottom: 205px;
+            left: 32px;
+            transform: rotate(-25deg);
+        }
+
+        #coral.adult .branch-7 {
+            width: 60px;
+            height: 70px;
+            bottom: 205px;
+            right: 32px;
+            transform: rotate(25deg);
+        }
+
+        #coral.adult .branch-8 {
+            width: 48px;
+            height: 58px;
+            bottom: 235px;
+            left: 48px;
+            transform: rotate(-15deg);
+        }
+
+        #coral.adult .branch-9 {
+            width: 48px;
+            height: 58px;
+            bottom: 235px;
+            right: 48px;
+            transform: rotate(15deg);
+        }
+
+        #coral.adult .branch-10 {
+            width: 52px;
+            height: 62px;
+            bottom: 245px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* ANCIÃO - Coral épico e majestoso */
+        #coral.elder { 
+            width: 340px; 
+            height: 360px;
+        }
+
+        #coral.elder .coralBase {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 170px;
+            height: 80px;
+            background: linear-gradient(135deg, #8b7355, #6b5345, #5a4233, #4a3828);
+            border-radius: 60% 60% 45% 45%;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+        }
+
+        #coral.elder .trunk {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 105px;
+            background: linear-gradient(180deg, #ff6b6b 0%, #ff5252 30%, #e63946 65%, #d62828 100%);
+            border-radius: 28px 28px 14px 14px;
+            box-shadow: 
+                inset -5px 0 12px rgba(0,0,0,0.4),
+                5px 5px 25px rgba(0,0,0,0.5);
+        }
+
+        #coral.elder .trunk::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 22% 12%, rgba(255,255,255,0.4) 3px, transparent 3px),
+                radial-gradient(circle at 68% 20%, rgba(255,255,255,0.35) 2px, transparent 2px),
+                radial-gradient(circle at 42% 42%, rgba(255,255,255,0.3) 2px, transparent 2px),
+                radial-gradient(circle at 28% 68%, rgba(255,255,255,0.25) 2px, transparent 2px),
+                radial-gradient(circle at 72% 75%, rgba(255,255,255,0.2) 2px, transparent 2px);
+            border-radius: 28px 28px 14px 14px;
+        }
+
+        #coral.elder .branch {
+            position: absolute;
+            background: linear-gradient(135deg, #e63946 0%, #ff5252 20%, #ff6b6b 40%, #ff7675 60%, #ff8787 80%, #ffa3a3 100%);
+            border-radius: 45% 45% 50% 50%;
+            box-shadow: 
+                inset -7px -7px 18px rgba(0,0,0,0.4),
+                6px 6px 22px rgba(0,0,0,0.4);
+        }
+
+        #coral.elder .branch::before {
+            content: '';
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            background: 
+                radial-gradient(circle at 15% 15%, rgba(255,255,255,0.55) 2px, transparent 2px),
+                radial-gradient(circle at 52% 18%, rgba(255,255,255,0.5) 2px, transparent 2px),
+                radial-gradient(circle at 30% 42%, rgba(255,255,255,0.45) 2px, transparent 2px),
+                radial-gradient(circle at 65% 52%, rgba(255,255,255,0.4) 2px, transparent 2px),
+                radial-gradient(circle at 18% 68%, rgba(255,255,255,0.35) 2px, transparent 2px),
+                radial-gradient(circle at 78% 78%, rgba(255,255,255,0.3) 2px, transparent 2px);
+            border-radius: 50%;
+            top: 5%;
+            left: 5%;
+        }
+
+        #coral.elder .branch::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle, #ffcccb, #ffb3b3, #ffa3a3);
+            border-radius: 50%;
+            opacity: 0.95;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        #coral.elder .branch-1 {
+            width: 100px;
+            height: 110px;
+            bottom: 120px;
+            left: 18px;
+            transform: rotate(-22deg);
+        }
+
+        #coral.elder .branch-2 {
+            width: 100px;
+            height: 110px;
+            bottom: 120px;
+            right: 18px;
+            transform: rotate(22deg);
+        }
+
+        #coral.elder .branch-3 {
+            width: 85px;
+            height: 95px;
+            bottom: 175px;
+            left: 8px;
+            transform: rotate(-32deg);
+        }
+
+        #coral.elder .branch-4 {
+            width: 85px;
+            height: 95px;
+            bottom: 175px;
+            right: 8px;
+            transform: rotate(32deg);
+        }
+
+        #coral.elder .branch-5 {
+            width: 90px;
+            height: 100px;
+            bottom: 185px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #coral.elder .branch-6 {
+            width: 75px;
+            height: 85px;
+            bottom: 225px;
+            left: 28px;
+            transform: rotate(-28deg);
+        }
+
+        #coral.elder .branch-7 {
+            width: 75px;
+            height: 85px;
+            bottom: 225px;
+            right: 28px;
+            transform: rotate(28deg);
+        }
+
+        #coral.elder .branch-8 {
+            width: 70px;
+            height: 80px;
+            bottom: 240px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #coral.elder .branch-9 {
+            width: 60px;
+            height: 70px;
+            bottom: 275px;
+            left: 48px;
+            transform: rotate(-18deg);
+        }
+
+        #coral.elder .branch-10 {
+            width: 60px;
+            height: 70px;
+            bottom: 275px;
+            right: 48px;
+            transform: rotate(18deg);
+        }
+
+        #coral.elder .branch-11 {
+            width: 55px;
+            height: 65px;
+            bottom: 285px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #coral.elder .branch-12 {
+            width: 55px;
+            height: 65px;
+            bottom: 195px;
+            left: 3px;
+            transform: rotate(-38deg);
+        }
+
+        #coral.elder .branch-13 {
+            width: 55px;
+            height: 65px;
+            bottom: 195px;
+            right: 3px;
+            transform: rotate(38deg);
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: translateX(-50%) rotate(-1deg); }
+            50% { transform: translateX(-50%) rotate(1deg); }
+        }
+
+        #coral.adult.healthy .trunk,
+        #coral.young.healthy .trunk,
+        #coral.elder.healthy .trunk {
+            animation: sway 5s ease-in-out infinite;
+        }
+
+        .trash {
+            position: absolute;
+            cursor: pointer;
+            font-size: 2em;
+            animation: float 3s ease-in-out infinite;
+            z-index: 10;
+            transition: transform 0.2s;
+        }
+
+        .trash:active {
+            transform: scale(1.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        #educationalMsg {
+            background: rgba(255, 255, 255, 0.95);
+            margin: 10px 12px;
+            padding: 12px;
+            border-radius: 15px;
+            color: #2d3142;
+            font-size: clamp(0.8em, 2.5vw, 0.95em);
+            text-align: center;
+            line-height: 1.5;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            min-height: 50px;
+            transition: opacity 0.3s;
+        }
+
+        #actionButtons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 12px;
+        }
+
+        .actionBtn {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 20px;
+            font-size: clamp(0.9em, 2.5vw, 1.1em);
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .actionBtn:active {
+            transform: scale(0.95);
+        }
+
+        @media (hover: hover) {
+            .actionBtn:hover {
+                transform: scale(1.05);
+            }
+        }
+
+        .actionBtn.feed { background: linear-gradient(135deg, #ffd166, #f4a261); }
+        .actionBtn.water { background: linear-gradient(135deg, #06d6a0, #118ab2); }
+        .actionBtn.play { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); }
+        .actionBtn.light { background: linear-gradient(135deg, #ffd93d, #ffb800); }
+
+        .actionBtn span { 
+            font-size: 1.6em;
+        }
+
+        .particle {
+            position: absolute;
+            font-size: 1.5em;
+            animation: floatUp 2s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        @keyframes floatUp {
+            to {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        #minigameContent {
+            width: 90%;
+            max-width: 400px;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #minigameTitle {
+            color: #667eea;
+            font-size: clamp(1.3em, 4vw, 1.8em);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #minigameArea {
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .sequence-btn {
+            width: 70px;
+            height: 70px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .sequence-btn:active {
+            transform: scale(0.9);
+        }
+
+        .sequence-btn.flash {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.8);
+        }
+
+        .quiz-option {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border: 3px solid #667eea;
+            background: white;
+            border-radius: 15px;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (hover: hover) {
+            .quiz-option:hover {
+                background: #f0f0f0;
+            }
+        }
+
+        .quiz-option.correct {
+            background: #06d6a0;
+            color: white;
+            border-color: #06d6a0;
+        }
+
+        .quiz-option.wrong {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        #catchGame {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(180deg, #a8dadc 0%, #457b9d 100%);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .falling-item {
+            position: absolute;
+            font-size: 1.8em;
+            cursor: pointer;
+            animation: fall 3s linear;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes fall {
+            from { top: -50px; }
+            to { top: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div class="bubble" style="left: 10%; width: 40px; height: 40px; animation-delay: 0s;"></div>
+        <div class="bubble" style="left: 30%; width: 60px; height: 60px; animation-delay: 2s;"></div>
+        <div class="bubble" style="left: 50%; width: 30px; height: 30px; animation-delay: 4s;"></div>
+        <div class="bubble" style="left: 70%; width: 50px; height: 50px; animation-delay: 1s;"></div>
+        <div class="bubble" style="left: 85%; width: 35px; height: 35px; animation-delay: 3s;"></div>
+
+        <div id="startScreen">
+            <h1>🪸 Meu Coral de Guarapari</h1>
+            <p class="screen-text">Bem-vindo ao Recife de Guarapari! Cuide bem do seu coral e ajude a preservar nossos mares! 🌊</p>
+            <button class="btn" onclick="startGame()">Começar Cuidado</button>
+        </div>
+
+        <div id="winScreen">
+            <h1>🎉 Parabéns!</h1>
+            <p class="screen-text">Você é um verdadeiro Guardião dos Recifes de Guarapari! 🪸👑<br><br>Seu coral alcançou o estágio ANCIÃO! Um recife completo e majestoso que protege toda a vida marinha. Guarapari agradece seu cuidado!</p>
+            <button class="btn" onclick="restartGame()">Cuidar de Novo Coral</button>
+        </div>
+
+        <div id="minigameScreen">
+            <div id="minigameContent">
+                <h2 id="minigameTitle">🎮 Hora de Brincar!</h2>
+                <div id="minigameArea"></div>
+                <button class="btn" style="margin-top: 20px; width: 100%;" onclick="closeMinigame()">Voltar</button>
+            </div>
+        </div>
+
+        <div id="header">
+            <div>🪸 Meu Coral</div>
+            <div>
+                <div id="stageInfo">Embrião</div>
+                <div id="growthProgress">0/100 pts</div>
+            </div>
+        </div>
+
+        <div id="statusBars">
+            <div class="statusBar">
+                <div class="statusLabel">
+                    <span>😊 Felicidade</span>
+                    <span id="happinessValue">50%</span>
+                </div>
+                <div class="barContainer">
+                    <div class="barFill" id="happinessBar" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <div class="statusBar">
+                <div class="statusLabel">
+                    <span>✨ Limpeza</span>
+                    <span id="cleanValue">50%</span>
+                </div>
+                <div class="barContainer">
+                    <div class="barFill" id="cleanBar" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <div class="statusBar">
+                <div class="statusLabel">
+                    <span>⚡ Energia</span>
+                    <span id="energyValue">50%</span>
+                </div>
+                <div class="barContainer">
+                    <div class="barFill" id="energyBar" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <div class="statusBar">
+                <div class="statusLabel">
+                    <span>🌊 Saúde do Recife</span>
+                    <span id="healthValue">50%</span>
+                </div>
+                <div class="barContainer">
+                    <div class="barFill" id="healthBar" style="width: 50%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="coralArea">
+            <div id="coral" class="embryo">
+                <div class="coralBody">
+                    <div class="eye left">
+                        <div class="shine"></div>
+                    </div>
+                    <div class="eye right">
+                        <div class="shine"></div>
+                    </div>
+                    <div class="mouth happy"></div>
+                    <div class="cheek left"></div>
+                    <div class="cheek right"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="educationalMsg">
+            Os corais de Guarapari são lar de muitas espécies marinhas — cuidar deles é cuidar da vida no oceano.
+        </div>
+
+        <div id="actionButtons">
+            <button class="actionBtn feed" onclick="feedCoral()">
+                <span>🦐</span>
+                <div>Alimentar</div>
+            </button>
+            <button class="actionBtn water" onclick="addWater()">
+                <span>💧</span>
+                <div>Água Limpa</div>
+            </button>
+            <button class="actionBtn light" onclick="giveSunlight()">
+                <span>☀️</span>
+                <div>Luz Solar</div>
+            </button>
+            <button class="actionBtn play" onclick="playMinigame()">
+                <span>🎮</span>
+                <div>Brincar</div>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÕES DO JOGO (escopo global)
+        var CONFIG = {
+            FEED_ENERGY: 15,
+            FEED_HAPPINESS: 8,
+            FEED_GROWTH: 5,
+            WATER_CLEAN: 20,
+            WATER_HAPPINESS: 8,
+            WATER_GROWTH: 4,
+            LIGHT_ENERGY: 12,
+            LIGHT_HAPPINESS: 10,
+            LIGHT_GROWTH: 6,
+            DECAY_HAPPINESS: 0.5,
+            DECAY_CLEAN: 0.8,
+            DECAY_ENERGY: 0.6,
+            DECAY_INTERVAL: 3000,
+            TRASH_INTERVAL: 5000,
+            TRASH_DAMAGE: 4,
+            TRASH_CLEAN_REWARD: 12,
+            MESSAGE_INTERVAL: 12000
+        };
+
+        var GROWTH_REQUIREMENTS = {
+            embryo: 100,
+            baby: 250,
+            child: 450,
+            teen: 700,
+            young: 1000,
+            adult: 1400
+        };
+
+        var STAGE_NAMES = {
+            embryo: 'Embrião',
+            baby: 'Bebê',
+            child: 'Criança',
+            teen: 'Adolescente',
+            young: 'Jovem',
+            adult: 'Adulto',
+            elder: 'Ancião'
+        };
+
+        var gameState = {
+            happiness: 50,
+            clean: 50,
+            energy: 50,
+            health: 50,
+            stage: 'embryo',
+            growthPoints: 0
+        };
+
+        var messageIndex = 0;
+        var decayInterval;
+        var trashInterval;
+        var messageInterval;
+
+        var messages = [
+            "Os corais de Guarapari são lar de muitas espécies marinhas — cuidar deles é cuidar da vida no oceano.",
+            "Sabia que o coral é um ser vivo? Ele se alimenta, cresce e precisa de um ambiente limpo para sobreviver!",
+            "Evite jogar lixo nas praias! Um plástico pode sufocar um coral inteiro.",
+            "Turismo sustentável é o segredo para manter Guarapari linda e viva 🌊.",
+            "Os recifes de coral protegem nossas praias da erosão e das ondas fortes!",
+            "Cada ação conta! Pequenas atitudes diárias ajudam a preservar o meio ambiente.",
+            "Os corais crescem apenas alguns centímetros por ano. Preserve-os!",
+            "A luz solar é essencial para os corais! Ela ajuda na fotossíntese das algas que vivem neles.",
+            "Água limpa é vida! Os corais precisam de água pura para sobreviver."
+        ];
+
+        var trashTypes = ['🗑️', '🥤', '🎒', '💩', '🛢️', '🧴'];
+
+        // Função auxiliar para limitar valores
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        // Salvar e carregar progresso
+        function saveGame() {
+            try {
+                const data = JSON.stringify(gameState);
+                localStorage.setItem('coralGameSave', data);
+            } catch (e) {
+                console.warn('Não foi possível salvar o jogo');
+            }
+        }
+
+        function loadGame() {
+            try {
+                const saved = localStorage.getItem('coralGameSave');
+                if (saved) {
+                    const loaded = JSON.parse(saved);
+                    gameState = { ...gameState, ...loaded };
+                    return true;
+                }
+            } catch (e) {
+                console.warn('Não foi possível carregar o jogo salvo');
+            }
+            return false;
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            
+            // Tentar carregar jogo salvo
+            if (loadGame()) {
+                updateCoralStage();
+            }
+            
+            updateUI();
+            startDecay();
+            startTrashSpawner();
+            updateMessage();
+            messageInterval = setInterval(updateMessage, CONFIG.MESSAGE_INTERVAL);
+        }
+
+        function restartGame() {
+            clearInterval(decayInterval);
+            clearInterval(trashInterval);
+            clearInterval(messageInterval);
+            
+            document.getElementById('winScreen').style.display = 'none';
+            document.querySelectorAll('.trash').forEach(t => t.remove());
+            
+            gameState = {
+                happiness: 50,
+                clean: 50,
+                energy: 50,
+                health: 50,
+                stage: 'embryo',
+                growthPoints: 0
+            };
+            
+            const coral = document.getElementById('coral');
+            coral.className = 'embryo';
+            coral.innerHTML = '<div class="coralBody"></div>';
+            
+            document.getElementById('stageInfo').textContent = 'Embrião';
+            
+            try {
+                localStorage.removeItem('coralGameSave');
+            } catch (e) {}
+            
+            startGame();
+        }
+
+        function updateUI() {
+            gameState.happiness = clamp(gameState.happiness, 0, 100);
+            gameState.clean = clamp(gameState.clean, 0, 100);
+            gameState.energy = clamp(gameState.energy, 0, 100);
+
+            document.getElementById('happinessBar').style.width = gameState.happiness + '%';
+            document.getElementById('cleanBar').style.width = gameState.clean + '%';
+            document.getElementById('energyBar').style.width = gameState.energy + '%';
+            document.getElementById('healthBar').style.width = gameState.health + '%';
+
+            document.getElementById('happinessValue').textContent = Math.round(gameState.happiness) + '%';
+            document.getElementById('cleanValue').textContent = Math.round(gameState.clean) + '%';
+            document.getElementById('energyValue').textContent = Math.round(gameState.energy) + '%';
+            document.getElementById('healthValue').textContent = Math.round(gameState.health) + '%';
+
+            const avgHealth = (gameState.happiness + gameState.clean + gameState.energy) / 3;
+            gameState.health = clamp(avgHealth, 0, 100);
+
+            const coral = document.getElementById('coral');
+            
+            if (avgHealth >= 70) {
+                coral.classList.add('healthy');
+                var mouth = coral.querySelector('.mouth');
+                if (mouth) mouth.className = 'mouth happy';
+            } else if (avgHealth < 40) {
+                coral.classList.remove('healthy');
+                var mouth = coral.querySelector('.mouth');
+                if (mouth) mouth.className = 'mouth sad';
+            } else {
+                coral.classList.remove('healthy');
+                var mouth = coral.querySelector('.mouth');
+                if (mouth) mouth.className = 'mouth happy';
+            }
+
+            updateGrowthProgress();
+            checkGrowth();
+            saveGame();
+        }
+
+        function updateGrowthProgress() {
+            const stageOrder = ['embryo', 'baby', 'child', 'teen', 'young', 'adult'];
+            const currentIndex = stageOrder.indexOf(gameState.stage);
+            
+            if (currentIndex >= 0 && currentIndex < stageOrder.length) {
+                const requirement = GROWTH_REQUIREMENTS[gameState.stage];
+                document.getElementById('growthProgress').textContent = 
+                    `${gameState.growthPoints}/${requirement} pts`;
+            } else {
+                document.getElementById('growthProgress').textContent = 'Ancião Completo! 🏆';
+            }
+        }
+
+        function updateCoralStage() {
+            const coral = document.getElementById('coral');
+            const stage = gameState.stage;
+            
+            coral.className = stage + (gameState.health >= 70 ? ' healthy' : '');
+            document.getElementById('stageInfo').textContent = STAGE_NAMES[stage];
+            
+            // Gerar HTML do coral baseado no estágio
+            const html = getCoralHTML(stage);
+            coral.innerHTML = html;
+        }
+
+        function getCoralHTML(stage) {
+            if (stage === 'embryo') {
+                return `
+                    <div class="coralBody">
+                        <div class="eye left">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="eye right">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="mouth happy"></div>
+                        <div class="cheek left"></div>
+                        <div class="cheek right"></div>
+                    </div>
+                `;
+            } else if (stage === 'baby') {
+                return `
+                    <div class="coralBody">
+                        <div class="eye left">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="eye right">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="mouth happy"></div>
+                        <div class="cheek left"></div>
+                        <div class="cheek right"></div>
+                    </div>
+                `;
+            } else if (stage === 'child') {
+                return `
+                    <div class="coralBase"></div>
+                    <div class="branch branch-1">
+                        <div class="eye left">
+                            <div class="shine"></div>
+                        </div>
+                    </div>
+                    <div class="branch branch-2">
+                        <div class="eye right">
+                            <div class="shine"></div>
+                        </div>
+                    </div>
+                    <div class="branch branch-3">
+                        <div class="mouth happy"></div>
+                        <div class="cheek left"></div>
+                        <div class="cheek right"></div>
+                    </div>
+                `;
+            } else if (stage === 'teen') {
+                return `
+                    <div class="coralBase"></div>
+                    <div class="trunk">
+                        <div class="eye left">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="eye right">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="mouth happy"></div>
+                        <div class="cheek left"></div>
+                        <div class="cheek right"></div>
+                    </div>
+                    <div class="branch branch-1"></div>
+                    <div class="branch branch-2"></div>
+                    <div class="branch branch-3"></div>
+                    <div class="branch branch-4"></div>
+                    <div class="branch branch-5"></div>
+                `;
+            } else if (stage === 'young') {
+                return `
+                    <div class="coralBase"></div>
+                    <div class="trunk">
+                        <div class="eye left">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="eye right">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="mouth happy"></div>
+                        <div class="cheek left"></div>
+                        <div class="cheek right"></div>
+                    </div>
+                    <div class="branch branch-1"></div>
+                    <div class="branch branch-2"></div>
+                    <div class="branch branch-3"></div>
+                    <div class="branch branch-4"></div>
+                    <div class="branch branch-5"></div>
+                    <div class="branch branch-6"></div>
+                    <div class="branch branch-7"></div>
+                `;
+            } else if (stage === 'adult') {
+                return `
+                    <div class="coralBase"></div>
+                    <div class="trunk">
+                        <div class="eye left">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="eye right">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="mouth happy"></div>
+                        <div class="cheek left"></div>
+                        <div class="cheek right"></div>
+                    </div>
+                    <div class="branch branch-1"></div>
+                    <div class="branch branch-2"></div>
+                    <div class="branch branch-3"></div>
+                    <div class="branch branch-4"></div>
+                    <div class="branch branch-5"></div>
+                    <div class="branch branch-6"></div>
+                    <div class="branch branch-7"></div>
+                    <div class="branch branch-8"></div>
+                    <div class="branch branch-9"></div>
+                    <div class="branch branch-10"></div>
+                `;
+            } else if (stage === 'elder') {
+                return `
+                    <div class="coralBase"></div>
+                    <div class="trunk">
+                        <div class="eye left">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="eye right">
+                            <div class="shine"></div>
+                        </div>
+                        <div class="mouth happy"></div>
+                        <div class="cheek left"></div>
+                        <div class="cheek right"></div>
+                    </div>
+                    <div class="branch branch-1"></div>
+                    <div class="branch branch-2"></div>
+                    <div class="branch branch-3"></div>
+                    <div class="branch branch-4"></div>
+                    <div class="branch branch-5"></div>
+                    <div class="branch branch-6"></div>
+                    <div class="branch branch-7"></div>
+                    <div class="branch branch-8"></div>
+                    <div class="branch branch-9"></div>
+                    <div class="branch branch-10"></div>
+                    <div class="branch branch-11"></div>
+                    <div class="branch branch-12"></div>
+                    <div class="branch branch-13"></div>
+                `;
+            }
+            return `
+                <div class="coralBody">
+                    <div class="eye left">
+                        <div class="shine"></div>
+                    </div>
+                    <div class="eye right">
+                        <div class="shine"></div>
+                    </div>
+                    <div class="mouth happy"></div>
+                    <div class="cheek left"></div>
+                    <div class="cheek right"></div>
+                </div>
+            `;
+        }
+
+        function checkGrowth() {
+            const stages = ['embryo', 'baby', 'child', 'teen', 'young', 'adult', 'elder'];
+            const currentIndex = stages.indexOf(gameState.stage);
+            
+            if (currentIndex < 0 || currentIndex >= stages.length - 1) return;
+            
+            const nextStage = stages[currentIndex + 1];
+            const requirement = GROWTH_REQUIREMENTS[gameState.stage];
+            
+            if (gameState.growthPoints >= requirement) {
+                gameState.stage = nextStage;
+                updateCoralStage();
+                
+                const messages = {
+                    baby: "🎉 Seu coral saiu do embrião e agora é um bebê!",
+                    child: "🌱 Seu coral está crescendo! Agora é uma criança com pequenos galhinhos!",
+                    teen: "🪸 Adolescente! Seu coral está formando ramificações definidas!",
+                    young: "🌊 Coral jovem! Uma estrutura complexa está se formando!",
+                    adult: "🎊 Coral adulto majestoso! Continue cuidando para alcançar o último estágio!",
+                    elder: "👑 CORAL ANCIÃO! Você alcançou o estágio máximo! Guardião do Recife de Guarapari!"
+                };
+                
+                showMessage(messages[nextStage] || "Seu coral evoluiu!");
+                celebrateGrowth();
+                
+                if (nextStage === 'elder') {
+                    setTimeout(winGame, 3000);
+                }
+            }
+        }
+
+        function celebrateGrowth() {
+            const emojis = ['✨', '🌟', '💫', '⭐', '🎉'];
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+                    showParticle(emoji, '#ffd166', true);
+                }, i * 100);
+            }
+        }
+
+        function feedCoral() {
+            gameState.energy = clamp(gameState.energy + CONFIG.FEED_ENERGY, 0, 100);
+            gameState.happiness = clamp(gameState.happiness + CONFIG.FEED_HAPPINESS, 0, 100);
+            gameState.growthPoints += CONFIG.FEED_GROWTH;
+            showParticle('🦐', '#4ecdc4');
+            updateUI();
+            showMessage("Delicioso! Seu coral está se alimentando de plâncton e nutrientes!");
+            animateCoral('bounce');
+        }
+
+        function addWater() {
+            gameState.clean = clamp(gameState.clean + CONFIG.WATER_CLEAN, 0, 100);
+            gameState.happiness = clamp(gameState.happiness + CONFIG.WATER_HAPPINESS, 0, 100);
+            gameState.growthPoints += CONFIG.WATER_GROWTH;
+            showParticle('💧', '#06d6a0');
+            updateUI();
+            showMessage("Água fresca e limpa! O coral está respirando melhor!");
+        }
+
+        function giveSunlight() {
+            gameState.energy = clamp(gameState.energy + CONFIG.LIGHT_ENERGY, 0, 100);
+            gameState.happiness = clamp(gameState.happiness + CONFIG.LIGHT_HAPPINESS, 0, 100);
+            gameState.growthPoints += CONFIG.LIGHT_GROWTH;
+            showParticle('☀️', '#ffd93d');
+            updateUI();
+            showMessage("Luz solar perfeita! A fotossíntese está fortalecendo o coral!");
+            
+            const coral = document.getElementById('coral');
+            coral.style.filter = 'brightness(1.5) saturate(1.5)';
+            setTimeout(() => coral.style.filter = '', 1000);
+        }
+
+        function animateCoral(anim) {
+            const coral = document.getElementById('coral');
+            coral.style.animation = `${anim} 0.5s`;
+            setTimeout(() => coral.style.animation = '', 500);
+        }
+
+        function showParticle(emoji, color, random = false) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.textContent = emoji;
+            
+            if (random) {
+                particle.style.left = Math.random() * 80 + 10 + '%';
+            } else {
+                particle.style.left = '50%';
+            }
+            
+            particle.style.top = '50%';
+            particle.style.color = color;
+            document.getElementById('coralArea').appendChild(particle);
+            
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.remove();
+                }
+            }, 2000);
+        }
+
+        function startDecay() {
+            decayInterval = setInterval(() => {
+                gameState.happiness = Math.max(0, gameState.happiness - CONFIG.DECAY_HAPPINESS);
+                gameState.clean = Math.max(0, gameState.clean - CONFIG.DECAY_CLEAN);
+                gameState.energy = Math.max(0, gameState.energy - CONFIG.DECAY_ENERGY);
+                
+                updateUI();
+
+                if (gameState.health < 30) {
+                    showMessage("⚠️ O coral está ficando triste... a poluição está afetando o mar! Cuide melhor dele.");
+                }
+            }, CONFIG.DECAY_INTERVAL);
+        }
+
+        function startTrashSpawner() {
+            trashInterval = setInterval(() => {
+                if (Math.random() < 0.3) {
+                    spawnTrash();
+                }
+            }, CONFIG.TRASH_INTERVAL);
+        }
+
+        function spawnTrash() {
+            const existingTrash = document.querySelectorAll('.trash').length;
+            if (existingTrash >= 4) return;
+
+            const trash = document.createElement('div');
+            trash.className = 'trash';
+            trash.textContent = trashTypes[Math.floor(Math.random() * trashTypes.length)];
+            trash.style.left = Math.random() * 70 + 15 + '%';
+            trash.style.top = Math.random() * 60 + 20 + '%';
+            trash.style.animationDelay = Math.random() * 2 + 's';
+            
+            trash.onclick = function() {
+                cleanTrash(this);
+            };
+            
+            document.getElementById('coralArea').appendChild(trash);
+
+            gameState.clean = Math.max(0, gameState.clean - CONFIG.TRASH_DAMAGE);
+            updateUI();
+        }
+
+        function cleanTrash(trashElement) {
+            gameState.clean = clamp(gameState.clean + CONFIG.TRASH_CLEAN_REWARD, 0, 100);
+            gameState.happiness = clamp(gameState.happiness + 8, 0, 100);
+            gameState.growthPoints += 4;
+            
+            showParticle('✨', '#06d6a0');
+            if (trashElement.parentNode) {
+                trashElement.remove();
+            }
+            updateUI();
+            showMessage("Ótimo trabalho! Você removeu a poluição do mar!");
+        }
+
+        function updateMessage() {
+            if (gameState.health < 30) return;
+            
+            messageIndex = (messageIndex + 1) % messages.length;
+            showMessage(messages[messageIndex]);
+        }
+
+        function showMessage(msg) {
+            const msgElement = document.getElementById('educationalMsg');
+            msgElement.style.opacity = '0';
+            setTimeout(() => {
+                msgElement.textContent = msg;
+                msgElement.style.opacity = '1';
+            }, 300);
+        }
+
+        function winGame() {
+            clearInterval(decayInterval);
+            clearInterval(trashInterval);
+            clearInterval(messageInterval);
+            document.getElementById('winScreen').style.display = 'flex';
+        }
+
+        // MINIGAMES
+        var currentMinigame = null;
+
+        function playMinigame() {
+            const games = ['sequence', 'quiz', 'catch'];
+            currentMinigame = games[Math.floor(Math.random() * games.length)];
+            
+            document.getElementById('minigameScreen').style.display = 'flex';
+            
+            if (currentMinigame === 'sequence') {
+                startSequenceGame();
+            } else if (currentMinigame === 'quiz') {
+                startQuizGame();
+            } else if (currentMinigame === 'catch') {
+                startCatchGame();
+            }
+        }
+
+        function closeMinigame() {
+            document.getElementById('minigameScreen').style.display = 'none';
+            
+            // Limpar intervals do catch game
+            if (catchGameInterval) {
+                clearInterval(catchGameInterval);
+                catchGameInterval = null;
+            }
+            if (catchGameTimer) {
+                clearInterval(catchGameTimer);
+                catchGameTimer = null;
+            }
+            
+            currentMinigame = null;
+        }
+
+        // Minigame 1: Sequência de Cores
+        var sequenceGame = {
+            sequence: [],
+            playerSequence: [],
+            level: 1
+        };
+
+        function startSequenceGame() {
+            document.getElementById('minigameTitle').textContent = '🎨 Memorize a Sequência!';
+            const area = document.getElementById('minigameArea');
+            
+            const colors = ['#ff6b6b', '#06d6a0', '#ffd93d', '#667eea'];
+            const emojis = ['🔴', '🟢', '🟡', '🔵'];
+            
+            sequenceGame = {
+                sequence: [],
+                playerSequence: [],
+                level: 1,
+                colors: colors,
+                emojis: emojis
+            };
+            
+            area.innerHTML = `
+                <p style="color: #667eea; margin-bottom: 15px;">Nível ${sequenceGame.level}</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    ${colors.map((color, i) => `
+                        <button class="sequence-btn" style="background: ${color};" data-index="${i}">
+                            ${emojis[i]}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            
+            setTimeout(() => playSequence(), 1000);
+            
+            document.querySelectorAll('.sequence-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    sequenceGame.playerSequence.push(index);
+                    flashButton(this);
+                    checkSequence();
+                });
+            });
+        }
+        
+        function playSequence() {
+            sequenceGame.sequence.push(Math.floor(Math.random() * 4));
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i >= sequenceGame.sequence.length) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                const btnIndex = sequenceGame.sequence[i];
+                const btn = document.querySelector(`.sequence-btn[data-index="${btnIndex}"]`);
+                if (btn) flashButton(btn);
+                i++;
+            }, 800);
+        }
+        
+        function flashButton(btn) {
+            btn.classList.add('flash');
+            setTimeout(() => btn.classList.remove('flash'), 300);
+        }
+        
+        function checkSequence() {
+            const current = sequenceGame.playerSequence.length - 1;
+            
+            if (sequenceGame.playerSequence[current] !== sequenceGame.sequence[current]) {
+                setTimeout(() => {
+                    alert('Ops! Tente novamente!');
+                    closeMinigame();
+                }, 300);
+                return;
+            }
+            
+            if (sequenceGame.playerSequence.length === sequenceGame.sequence.length) {
+                gameState.happiness = clamp(gameState.happiness + 10, 0, 100);
+                gameState.growthPoints += 8;
+                updateUI();
+                
+                setTimeout(() => {
+                    alert('Parabéns! 🎉');
+                    closeMinigame();
+                }, 300);
+            }
+        }
+        
+        // Minigame 2: Quiz Ambiental
+        function startQuizGame() {
+            document.getElementById('minigameTitle').textContent = '🧠 Quiz Ambiental!';
+            const area = document.getElementById('minigameArea');
+            
+            const quizzes = [
+                {
+                    question: "O que é bom para os corais?",
+                    options: ["Água limpa", "Plástico", "Poluição", "Óleo"],
+                    correct: 0
+                },
+                {
+                    question: "Os corais precisam de:",
+                    options: ["Escuridão", "Lixo", "Luz solar", "Frio extremo"],
+                    correct: 2
+                },
+                {
+                    question: "O que prejudica os recifes?",
+                    options: ["Turismo responsável", "Lixo no mar", "Água limpa", "Proteção"],
+                    correct: 1
+                },
+                {
+                    question: "Os corais são:",
+                    options: ["Plantas", "Pedras", "Animais", "Algas"],
+                    correct: 2
+                }
+            ];
+            
+            const quiz = quizzes[Math.floor(Math.random() * quizzes.length)];
+            
+            area.innerHTML = `
+                <p style="color: #667eea; font-size: 1.1em; margin-bottom: 20px; text-align: center;">
+                    ${quiz.question}
+                </p>
+                ${quiz.options.map((opt, i) => `
+                    <button class="quiz-option" data-index="${i}">
+                        ${opt}
+                    </button>
+                `).join('')}
+            `;
+            
+            document.querySelectorAll('.quiz-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const selected = parseInt(this.dataset.index);
+                    
+                    document.querySelectorAll('.quiz-option').forEach(b => {
+                        b.style.pointerEvents = 'none';
+                    });
+                    
+                    if (selected === quiz.correct) {
+                        this.classList.add('correct');
+                        gameState.happiness = clamp(gameState.happiness + 12, 0, 100);
+                        gameState.growthPoints += 10;
+                        updateUI();
+                        
+                        setTimeout(() => {
+                            alert('Correto! 🎉');
+                            closeMinigame();
+                        }, 800);
+                    } else {
+                        this.classList.add('wrong');
+                        document.querySelector(`.quiz-option[data-index="${quiz.correct}"]`).classList.add('correct');
+                        
+                        setTimeout(() => {
+                            alert('Ops! Mas você aprendeu algo novo! 📚');
+                            closeMinigame();
+                        }, 1500);
+                    }
+                });
+            });
+        }
+        
+        // Minigame 3: Pegar Itens Bons
+        var catchGameInterval;
+        var catchGameTimer;
+        var catchScore = 0;
+        
+        function startCatchGame() {
+            document.getElementById('minigameTitle').textContent = '🎣 Pegue os Itens Bons!';
+            const area = document.getElementById('minigameArea');
+            
+            catchScore = 0;
+            
+            area.innerHTML = `
+                <p style="color: #667eea; margin-bottom: 10px;">Pontos: <span id="catchScore">0</span></p>
+                <p style="color: #667eea; font-size: 0.9em; margin-bottom: 15px;">Clique nos peixes e evite o lixo!</p>
+                <div id="catchGame"></div>
+            `;
+            
+            let timeLeft = 15;
+            const timerDisplay = document.createElement('p');
+            timerDisplay.style.color = '#667eea';
+            timerDisplay.style.marginTop = '10px';
+            timerDisplay.textContent = `Tempo: ${timeLeft}s`;
+            area.appendChild(timerDisplay);
+            
+            catchGameTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `Tempo: ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(catchGameTimer);
+                    clearInterval(catchGameInterval);
+                    endCatchGame();
+                }
+            }, 1000);
+            
+            catchGameInterval = setInterval(spawnCatchItem, 1000);
+        }
+        
+        function spawnCatchItem() {
+            const game = document.getElementById('catchGame');
+            if (!game) return;
+            
+            const goodItems = ['🐠', '🐟', '🐡', '🦈', '🐙', '⭐'];
+            const badItems = ['🗑️', '🥤', '💩', '🛢️'];
+            
+            const isGood = Math.random() > 0.3;
+            const item = document.createElement('div');
+            item.className = 'falling-item';
+            item.textContent = isGood ? 
+                goodItems[Math.floor(Math.random() * goodItems.length)] :
+                badItems[Math.floor(Math.random() * badItems.length)];
+            item.style.left = Math.random() * 80 + 10 + '%';
+            
+            item.addEventListener('click', function() {
+                if (isGood) {
+                    catchScore += 10;
+                    this.textContent = '✨';
+                } else {
+                    catchScore = Math.max(0, catchScore - 5);
+                    this.textContent = '❌';
+                }
+                const scoreEl = document.getElementById('catchScore');
+                if (scoreEl) {
+                    scoreEl.textContent = catchScore;
+                }
+                
+                setTimeout(() => {
+                    if (this.parentNode) {
+                        this.remove();
+                    }
+                }, 200);
+            });
+            
+            game.appendChild(item);
+            
+            setTimeout(() => {
+                if (item.parentNode) item.remove();
+            }, 3000);
+        }
+        
+        function endCatchGame() {
+            gameState.happiness = clamp(gameState.happiness + Math.min(catchScore / 2, 15), 0, 100);
+            gameState.growthPoints += Math.floor(catchScore / 5);
+            updateUI();
+            
+            setTimeout(() => {
+                alert(`Fim do jogo! Você fez ${catchScore} pontos! 🎉`);
+                closeMinigame();
+            }, 500);
+        }
+
+        // Limpar elementos órfãos periodicamente
+        setInterval(() => {
+            document.querySelectorAll('.particle').forEach(el => {
+                if (el.parentNode && !el.style.animation) {
+                    el.remove();
+                }
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

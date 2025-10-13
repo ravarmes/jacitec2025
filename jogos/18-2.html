@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salva-ES: Labirinto contra Queimadas</title>
+    
+    <style>
+        :root {
+            --cor-fundo: #2d5016;
+            --cor-parede: #4a4a4a;
+            --cor-caminho: #a8d5a3;
+            --cor-jogador: #2196F3;
+            --cor-fogo: #ff4400;
+            --cor-balde: #4FC3F7;
+            --cor-texto: #333;
+            --cor-destaque: #ff6b35;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--cor-texto);
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 20px;
+            max-width: 95vw;
+            max-height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .hud-icon {
+            width: 24px;
+            height: 24px;
+        }
+        
+        #canvasWrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            display: block;
+            max-width: 100%;
+            max-height: 60vh;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
+        #mobileControls {
+            display: none;
+            margin-top: 15px;
+            gap: 10px;
+        }
+        
+        #dpad {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(3, 60px);
+            gap: 5px;
+        }
+        
+        .dpad-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            touch-action: manipulation;
+        }
+        
+        .dpad-btn:active {
+            transform: scale(0.95);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+        
+        #btnUp { grid-column: 2; grid-row: 1; }
+        #btnLeft { grid-column: 1; grid-row: 2; }
+        #btnAction { grid-column: 2; grid-row: 2; font-size: 16px; }
+        #btnRight { grid-column: 3; grid-row: 2; }
+        #btnDown { grid-column: 2; grid-row: 3; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-content h2 {
+            color: var(--cor-destaque);
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .modal-content p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        #menuInicial {
+            text-align: center;
+        }
+        
+        #menuInicial h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: var(--cor-destaque);
+        }
+        
+        #menuInicial p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        @media (max-width: 768px) {
+            #gameContainer {
+                padding: 10px;
+            }
+            
+            #hud {
+                font-size: 12px;
+            }
+            
+            .hud-icon {
+                width: 20px;
+                height: 20px;
+            }
+            
+            #mobileControls {
+                display: flex;
+                justify-content: center;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .modal-content h2 {
+                font-size: 20px;
+            }
+        }
+        
+        button:focus, .dpad-btn:focus {
+            outline: 3px solid var(--cor-destaque);
+            outline-offset: 2px;
+        }
+        
+        .mensagem-educativa {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid var(--cor-destaque);
+        }
+        
+        .mensagem-educativa strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--cor-destaque);
+        }
+        
+        .score-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 16px;
+        }
+        
+        .score-label {
+            font-weight: bold;
+        }
+        
+        .modal-derrota {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+        
+        .modal-derrota h2 {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="hud">
+            <div class="hud-item">
+                <span>🎮</span>
+                <span id="nivelAtual">Nível: Fácil</span>
+            </div>
+            <div class="hud-item">
+                <span>⏱️</span>
+                <span id="tempoDecorrido">0s</span>
+            </div>
+            <div class="hud-item">
+                <span>💣</span>
+                <span id="contadorPassos">0 passos</span>
+            </div>
+            <div class="hud-item">
+                <span id="iconeBalde">💧</span>
+                <span id="statusBalde">Sem balde</span>
+            </div>
+        </div>
+        
+        <div id="canvasWrapper">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        
+        <div id="mobileControls">
+            <div id="dpad">
+                <button class="dpad-btn" id="btnUp" aria-label="Mover para cima">▲</button>
+                <button class="dpad-btn" id="btnLeft" aria-label="Mover para esquerda">◀</button>
+                <button class="dpad-btn btn-primary" id="btnAction" aria-label="Jogar água">💧 Jogar Água</button>
+                <button class="dpad-btn" id="btnRight" aria-label="Mover para direita">▶</button>
+                <button class="dpad-btn" id="btnDown" aria-label="Mover para baixo">▼</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalInicial" class="modal active">
+        <div class="modal-content" id="menuInicial">
+            <h1>🔥 Salva-ES: Labirinto contra Queimadas</h1>
+            <p>Ajude a combater os focos de incêndio no Espírito Santo!</p>
+            <p><strong>Como jogar:</strong><br>
+            Navegue pelo labirinto, colete o balde e apague os focos de incêndio.<br>
+            Use as setas ou WASD (desktop) ou deslize/toque nos botões (mobile).</p>
+            <p><strong>⚠️ Cuidado:</strong> Não encoste no fogo sem ter água no balde!</p>
+            <p><strong>💡 Novidade no Difícil:</strong> Cada balde pode apagar 2 focos!</p>
+            
+            <div class="difficulty-selector">
+                <button class="btn-primary" onclick="iniciarJogo('facil')">🌱 Fácil</button>
+                <button class="btn-primary" onclick="iniciarJogo('dificil')">🔥 Difícil</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalDerrota" class="modal">
+        <div class="modal-content modal-derrota">
+            <h2>💀 Você Falhou!</h2>
+            <p style="font-size: 18px; font-weight: bold;">Tentou atravessar o fogo sem água!</p>
+            <p>Você precisa ter um balde com água antes de encostar no fogo. Colete o balde primeiro e tente novamente!</p>
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="reiniciarAposDerrota()">🔄 Tentar Novamente</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalEducativo" class="modal">
+        <div class="modal-content">
+            <h2>🎉 Fogo Apagado!</h2>
+            <div id="mensagemEducativaContainer" class="mensagem-educativa">
+                <strong>Você sabia?</strong>
+                <p id="textoEducativo"></p>
+            </div>
+            <p id="dicaPratica"></p>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="mostrarOutraCuriosidade()">💡 Outra Curiosidade</button>
+                <button class="btn-primary" onclick="continuarJogo()">▶ Continuar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalFimJogo" class="modal">
+        <div class="modal-content">
+            <h2>🏆 Parabéns, Guardião do ES!</h2>
+            <p>Você completou sua missão e ajudou a proteger o Espírito Santo!</p>
+            
+            <div class="score-display">
+                <div class="score-item">
+                    <span class="score-label">Tempo total:</span>
+                    <span id="tempoFinal">0s</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Passos dados:</span>
+                    <span id="passosFinal">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Focos apagados:</span>
+                    <span id="focosFinal">0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Pontuação:</span>
+                    <span id="pontuacaoFinal">0</span>
+                </div>
+            </div>
+            
+            <div class="mensagem-educativa">
+                <strong>💚 Impacto Evitado</strong>
+                <p id="impactoEvitado"></p>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="reiniciarJogo()">🔄 Jogar Novamente</button>
+                <button class="btn-secondary" onclick="mostrarMaisInfo()">📚 Mais Informações</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalInfo" class="modal">
+        <div class="modal-content">
+            <h2>📚 Saiba Mais sobre Queimadas</h2>
+            <p>Para mais informações sobre prevenção e combate a queimadas no Espírito Santo:</p>
+            <ul style="line-height: 2; margin: 20px 0;">
+                <li>🌐 <a href="https://www.es.gov.br" target="_blank">Portal do Governo do ES</a></li>
+                <li>🚒 <a href="https://www.bombeiros.es.gov.br" target="_blank">Corpo de Bombeiros ES</a></li>
+                <li>🌳 <a href="https://iema.es.gov.br" target="_blank">IEMA - Instituto Estadual de Meio Ambiente</a></li>
+                <li>📞 <strong>Denúncias:</strong> 193 (Bombeiros) ou Linha Verde 0800-2831336</li>
+            </ul>
+            <p><small>⚠️ Os links acima são informativos e opcionais.</small></p>
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="fecharModalInfo()">✓ Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG_MENSAGENS = [
+            {
+                texto: "Queimadas agravam a seca e prejudicam a agricultura no Espírito Santo. Evite queimar restos de poda e lixo.",
+                dica: "💡 Dica: Faça compostagem com restos orgânicos ao invés de queimá-los!"
+            },
+            {
+                texto: "A fumaça das queimadas provoca problemas respiratórios – idosos e crianças são os mais afetados.",
+                dica: "💡 Dica: Em dias com fumaça, mantenha janelas fechadas e evite exercícios ao ar livre."
+            },
+            {
+                texto: "Muitas queimadas podem ser evitadas com manejo adequado e pequenos aceiros.",
+                dica: "💡 Dica: Aceiros são faixas sem vegetação que impedem a propagação do fogo."
+            },
+            {
+                texto: "Queimar lixo nas áreas urbanas é crime ambiental e prejudica a qualidade do ar.",
+                dica: "💡 Dica: Use a coleta seletiva e leve resíduos aos pontos de descarte adequados."
+            },
+            {
+                texto: "Denuncie focos de incêndio: serviços municipais e Corpo de Bombeiros são canais úteis.",
+                dica: "💡 Dica: Ligue 193 para emergências de incêndio no ES."
+            },
+            {
+                texto: "A combinação de ventos fortes e clima seco torna as chamas mais rápidas – evite queimadas em dias de seca.",
+                dica: "💡 Dica: Consulte sempre a previsão do tempo antes de fazer qualquer queima controlada."
+            }
+        ];
+        
+        const CONFIG_DIFICULDADES = {
+            facil: {
+                tamanho: 15,
+                focos: 1,
+                obstaculos: 0.03,
+                capacidadeBalde: 1,
+                nome: "Fácil"
+            },
+            dificil: {
+                tamanho: 21,
+                focos: 2,
+                obstaculos: 0.08,
+                capacidadeBalde: 2,
+                nome: "Difícil"
+            }
+        };
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let jogo = {
+            labirinto: [],
+            tamanho: 15,
+            cellSize: 30,
+            jogador: { x: 0, y: 0, capacidadeBalde: 0, capacidadeMax: 1 },
+            focos: [],
+            baldes: [],
+            passos: 0,
+            tempoInicio: 0,
+            tempoDecorrido: 0,
+            intervaloTempo: null,
+            dificuldade: 'facil',
+            focosApagados: 0,
+            animacoes: [],
+            mensagemAtual: 0
+        };
+        
+        const CELULA = {
+            PAREDE: 0,
+            CAMINHO: 1,
+            ARVORE: 2,
+            FOGO: 3,
+            APAGADO: 4
+        };
+        
+        const DIRECOES = [
+            { dx: 0, dy: -2 },
+            { dx: 2, dy: 0 },
+            { dx: 0, dy: 2 },
+            { dx: -2, dy: 0 }
+        ];
+        
+        function gerarLabirinto(tamanho) {
+            const lab = Array(tamanho).fill(null).map(() => 
+                Array(tamanho).fill(CELULA.PAREDE)
+            );
+            
+            function dentroLimites(x, y) {
+                return x >= 0 && x < tamanho && y >= 0 && y < tamanho;
+            }
+            
+            function cavar(x, y) {
+                lab[y][x] = CELULA.CAMINHO;
+                
+                const dirs = [...DIRECOES].sort(() => Math.random() - 0.5);
+                
+                for (let dir of dirs) {
+                    const nx = x + dir.dx;
+                    const ny = y + dir.dy;
+                    
+                    if (dentroLimites(nx, ny) && lab[ny][nx] === CELULA.PAREDE) {
+                        lab[y + dir.dy/2][x + dir.dx/2] = CELULA.CAMINHO;
+                        cavar(nx, ny);
+                    }
+                }
+            }
+            
+            cavar(1, 1);
+            
+            return lab;
+        }
+        
+        function temCaminhoValido(lab, inicio, destino) {
+            const tamanho = lab.length;
+            const visitado = Array(tamanho).fill(null).map(() => Array(tamanho).fill(false));
+            const fila = [inicio];
+            visitado[inicio.y][inicio.x] = true;
+            
+            const direcoes = [
+                { dx: 0, dy: -1 },
+                { dx: 1, dy: 0 },
+                { dx: 0, dy: 1 },
+                { dx: -1, dy: 0 }
+            ];
+            
+            while (fila.length > 0) {
+                const atual = fila.shift();
+                
+                if (atual.x === destino.x && atual.y === destino.y) {
+                    return true;
+                }
+                
+                for (let dir of direcoes) {
+                    const nx = atual.x + dir.dx;
+                    const ny = atual.y + dir.dy;
+                    
+                    if (nx >= 0 && nx < tamanho && ny >= 0 && ny < tamanho &&
+                        !visitado[ny][nx] && 
+                        (lab[ny][nx] === CELULA.CAMINHO || lab[ny][nx] === CELULA.FOGO)) {
+                        visitado[ny][nx] = true;
+                        fila.push({ x: nx, y: ny });
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        function distanciaManhattan(p1, p2) {
+            return Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
+        }
+        
+        function eExtremidade(lab, x, y) {
+            const tamanho = lab.length;
+            
+            if (lab[y][x] !== CELULA.CAMINHO) {
+                return false;
+            }
+            
+            const direcoes = [
+                { dx: 0, dy: -1 },
+                { dx: 1, dy: 0 },
+                { dx: 0, dy: 1 },
+                { dx: -1, dy: 0 }
+            ];
+            
+            let caminhosAdjacentes = 0;
+            
+            for (let dir of direcoes) {
+                const nx = x + dir.dx;
+                const ny = y + dir.dy;
+                
+                if (nx >= 0 && nx < tamanho && ny >= 0 && ny < tamanho) {
+                    if (lab[ny][nx] === CELULA.CAMINHO) {
+                        caminhosAdjacentes++;
+                    }
+                }
+            }
+            
+            return caminhosAdjacentes === 1;
+        }
+        
+        function iniciarJogo(dificuldade) {
+            jogo.dificuldade = dificuldade;
+            const config = CONFIG_DIFICULDADES[dificuldade];
+            jogo.tamanho = config.tamanho;
+            
+            let labirintoValido = false;
+            let tentativas = 0;
+            const maxTentativas = 100;
+            
+            while (!labirintoValido && tentativas < maxTentativas) {
+                tentativas++;
+                
+                jogo.labirinto = gerarLabirinto(jogo.tamanho);
+                
+                jogo.jogador = { 
+                    x: 1, 
+                    y: 1, 
+                    capacidadeBalde: 0,
+                    capacidadeMax: config.capacidadeBalde
+                };
+                
+                jogo.baldes = [];
+                const posicoesCaminhos = [];
+                
+                for (let y = 0; y < jogo.tamanho; y++) {
+                    for (let x = 0; x < jogo.tamanho; x++) {
+                        if (jogo.labirinto[y][x] === CELULA.CAMINHO && !(x === 1 && y === 1)) {
+                            posicoesCaminhos.push({ x, y });
+                        }
+                    }
+                }
+                
+                posicoesCaminhos.sort(() => Math.random() - 0.5);
+                
+                for (let pos of posicoesCaminhos) {
+                    if (distanciaManhattan(pos, jogo.jogador) >= 3) {
+                        jogo.baldes.push({ x: pos.x, y: pos.y });
+                        break;
+                    }
+                }
+                
+                jogo.focos = [];
+                const extremidades = [];
+                
+                for (let y = 0; y < jogo.tamanho; y++) {
+                    for (let x = 0; x < jogo.tamanho; x++) {
+                        if (eExtremidade(jogo.labirinto, x, y)) {
+                            const ehJogador = (x === jogo.jogador.x && y === jogo.jogador.y);
+                            const ehBalde = jogo.baldes.some(b => b.x === x && b.y === y);
+                            
+                            if (!ehJogador && !ehBalde && distanciaManhattan({x, y}, jogo.jogador) >= 4) {
+                                extremidades.push({ x, y });
+                            }
+                        }
+                    }
+                }
+                
+                extremidades.sort(() => Math.random() - 0.5);
+                
+                for (let i = 0; i < config.focos && i < extremidades.length; i++) {
+                    const pos = extremidades[i];
+                    jogo.focos.push({ x: pos.x, y: pos.y, apagado: false });
+                    jogo.labirinto[pos.y][pos.x] = CELULA.FOGO;
+                }
+                
+                if (jogo.focos.length < config.focos) {
+                    continue;
+                }
+                
+                const numObstaculos = Math.floor(jogo.tamanho * jogo.tamanho * config.obstaculos);
+                let obstaculosColocados = 0;
+                
+                const posicoesParaObstaculos = posicoesCaminhos.filter(p => 
+                    !jogo.baldes.some(b => b.x === p.x && b.y === p.y) &&
+                    !jogo.focos.some(f => f.x === p.x && f.y === p.y) &&
+                    distanciaManhattan(p, jogo.jogador) >= 2
+                );
+                
+                posicoesParaObstaculos.sort(() => Math.random() - 0.5);
+                
+                for (let pos of posicoesParaObstaculos) {
+                    if (obstaculosColocados >= numObstaculos) break;
+                    
+                    jogo.labirinto[pos.y][pos.x] = CELULA.ARVORE;
+                    
+                    let todosAcessiveis = true;
+                    
+                    for (let foco of jogo.focos) {
+                        if (!temCaminhoValido(jogo.labirinto, jogo.jogador, foco)) {
+                            todosAcessiveis = false;
+                            break;
+                        }
+                    }
+                    
+                    if (todosAcessiveis && jogo.baldes.length > 0) {
+                        if (!temCaminhoValido(jogo.labirinto, jogo.jogador, jogo.baldes[0])) {
+                            todosAcessiveis = false;
+                        }
+                    }
+                    
+                    if (todosAcessiveis) {
+                        obstaculosColocados++;
+                    } else {
+                        jogo.labirinto[pos.y][pos.x] = CELULA.CAMINHO;
+                    }
+                }
+                
+                labirintoValido = true;
+                for (let foco of jogo.focos) {
+                    if (!temCaminhoValido(jogo.labirinto, jogo.jogador, foco)) {
+                        labirintoValido = false;
+                        break;
+                    }
+                }
+                
+                if (labirintoValido && jogo.baldes.length > 0) {
+                    if (!temCaminhoValido(jogo.labirinto, jogo.jogador, jogo.baldes[0])) {
+                        labirintoValido = false;
+                    }
+                }
+            }
+            
+            if (!labirintoValido) {
+                console.warn('Não foi possível gerar labirinto válido após', maxTentativas, 'tentativas');
+                return iniciarJogo(dificuldade);
+            }
+            
+            const maxCanvasSize = Math.min(window.innerWidth * 0.9, 800);
+            jogo.cellSize = Math.floor(maxCanvasSize / jogo.tamanho);
+            
+            canvas.width = jogo.tamanho * jogo.cellSize;
+            canvas.height = jogo.tamanho * jogo.cellSize;
+            
+            jogo.passos = 0;
+            jogo.focosApagados = 0;
+            jogo.tempoInicio = Date.now();
+            jogo.animacoes = [];
+            
+            if (jogo.intervaloTempo) clearInterval(jogo.intervaloTempo);
+            jogo.intervaloTempo = setInterval(atualizarTempo, 1000);
+            
+            document.getElementById('nivelAtual').textContent = `Nível: ${config.nome}`;
+            atualizarHUD();
+            
+            document.getElementById('modalInicial').classList.remove('active');
+            
+            desenharJogo();
+        }
+        
+        function atualizarHUD() {
+            document.getElementById('contadorPassos').textContent = `${jogo.passos} passos`;
+            
+            if (jogo.jogador.capacidadeBalde > 0) {
+                const capacidadeTexto = jogo.jogador.capacidadeMax > 1 
+                    ? `${jogo.jogador.capacidadeBalde}/${jogo.jogador.capacidadeMax}` 
+                    : 'Com água';
+                document.getElementById('statusBalde').textContent = capacidadeTexto;
+                document.getElementById('iconeBalde').textContent = '💧';
+            } else {
+                document.getElementById('statusBalde').textContent = 'Sem balde';
+                document.getElementById('iconeBalde').textContent = '🪣';
+            }
+        }
+        
+        function atualizarTempo() {
+            jogo.tempoDecorrido = Math.floor((Date.now() - jogo.tempoInicio) / 1000);
+            document.getElementById('tempoDecorrido').textContent = `${jogo.tempoDecorrido}s`;
+        }
+        
+        function desenharJogo() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let y = 0; y < jogo.tamanho; y++) {
+                for (let x = 0; x < jogo.tamanho; x++) {
+                    const celula = jogo.labirinto[y][x];
+                    const px = x * jogo.cellSize;
+                    const py = y * jogo.cellSize;
+                    
+                    switch(celula) {
+                        case CELULA.PAREDE:
+                            ctx.fillStyle = '#4a4a4a';
+                            break;
+                        case CELULA.CAMINHO:
+                            ctx.fillStyle = '#a8d5a3';
+                            break;
+                        case CELULA.ARVORE:
+                            ctx.fillStyle = '#2d5016';
+                            break;
+                        case CELULA.FOGO:
+                            ctx.fillStyle = '#ff4400';
+                            break;
+                        case CELULA.APAGADO:
+                            ctx.fillStyle = '#666';
+                            break;
+                    }
+                    
+                    ctx.fillRect(px, py, jogo.cellSize, jogo.cellSize);
+                    
+                    ctx.fillStyle = 'white';
+                    ctx.font = `${jogo.cellSize * 0.6}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    if (celula === CELULA.ARVORE) {
+                        ctx.fillText('🌳', px + jogo.cellSize/2, py + jogo.cellSize/2);
+                    } else if (celula === CELULA.FOGO) {
+                        ctx.fillText('🔥', px + jogo.cellSize/2, py + jogo.cellSize/2);
+                    } else if (celula === CELULA.APAGADO) {
+                        ctx.fillText('💨', px + jogo.cellSize/2, py + jogo.cellSize/2);
+                    }
+                    
+                    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(px, py, jogo.cellSize, jogo.cellSize);
+                }
+            }
+            
+            for (let balde of jogo.baldes) {
+                const px = balde.x * jogo.cellSize;
+                const py = balde.y * jogo.cellSize;
+                ctx.fillStyle = 'white';
+                ctx.font = `${jogo.cellSize * 0.7}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🪣', px + jogo.cellSize/2, py + jogo.cellSize/2);
+            }
+            
+            const px = jogo.jogador.x * jogo.cellSize;
+            const py = jogo.jogador.y * jogo.cellSize;
+            ctx.fillStyle = '#2196F3';
+            ctx.beginPath();
+            ctx.arc(px + jogo.cellSize/2, py + jogo.cellSize/2, jogo.cellSize * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'white';
+            ctx.font = `${jogo.cellSize * 0.5}px Arial`;
+            ctx.fillText('🧑', px + jogo.cellSize/2, py + jogo.cellSize/2);
+            
+            jogo.animacoes = jogo.animacoes.filter(anim => {
+                anim.frame++;
+                if (anim.frame > anim.maxFrames) return false;
+                
+                const alpha = 1 - (anim.frame / anim.maxFrames);
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = 'gray';
+                ctx.font = `${jogo.cellSize * 0.8}px Arial`;
+                ctx.fillText('💨', anim.x * jogo.cellSize + jogo.cellSize/2, 
+                            anim.y * jogo.cellSize + jogo.cellSize/2 - anim.frame * 2);
+                ctx.globalAlpha = 1;
+                return true;
+            });
+            
+            if (jogo.animacoes.length > 0) {
+                requestAnimationFrame(desenharJogo);
+            }
+        }
+        
+        function moverJogador(dx, dy) {
+            const novoX = jogo.jogador.x + dx;
+            const novoY = jogo.jogador.y + dy;
+            
+            if (novoX < 0 || novoX >= jogo.tamanho || novoY < 0 || novoY >= jogo.tamanho) {
+                return;
+            }
+            
+            const celula = jogo.labirinto[novoY][novoX];
+            if (celula === CELULA.PAREDE || celula === CELULA.ARVORE) {
+                return;
+            }
+            
+            if (celula === CELULA.FOGO && jogo.jogador.capacidadeBalde === 0) {
+                clearInterval(jogo.intervaloTempo);
+                document.getElementById('modalDerrota').classList.add('active');
+                return;
+            }
+            
+            jogo.jogador.x = novoX;
+            jogo.jogador.y = novoY;
+            jogo.passos++;
+            
+            const baldeIndex = jogo.baldes.findIndex(b => b.x === novoX && b.y === novoY);
+            if (baldeIndex !== -1) {
+                jogo.jogador.capacidadeBalde = jogo.jogador.capacidadeMax;
+                jogo.baldes.splice(baldeIndex, 1);
+            }
+            
+            atualizarHUD();
+            desenharJogo();
+        }
+        
+        function jogarAgua() {
+            if (jogo.jogador.capacidadeBalde === 0) {
+                alert('Você precisa de um balde com água!');
+                return;
+            }
+            
+            const adjacentes = [
+                { x: jogo.jogador.x, y: jogo.jogador.y - 1 },
+                { x: jogo.jogador.x + 1, y: jogo.jogador.y },
+                { x: jogo.jogador.x, y: jogo.jogador.y + 1 },
+                { x: jogo.jogador.x - 1, y: jogo.jogador.y },
+                { x: jogo.jogador.x, y: jogo.jogador.y }
+            ];
+            
+            let fogoApagado = false;
+            
+            for (let adj of adjacentes) {
+                if (adj.x >= 0 && adj.x < jogo.tamanho && adj.y >= 0 && adj.y < jogo.tamanho) {
+                    if (jogo.labirinto[adj.y][adj.x] === CELULA.FOGO) {
+                        jogo.labirinto[adj.y][adj.x] = CELULA.APAGADO;
+                        
+                        const foco = jogo.focos.find(f => f.x === adj.x && f.y === adj.y);
+                        if (foco) {
+                            foco.apagado = true;
+                            jogo.focosApagados++;
+                        }
+                        
+                        jogo.animacoes.push({
+                            x: adj.x,
+                            y: adj.y,
+                            frame: 0,
+                            maxFrames: 30
+                        });
+                        
+                        fogoApagado = true;
+                        jogo.jogador.capacidadeBalde--;
+                        
+                        tocarSomApagar();
+                        
+                        break;
+                    }
+                }
+            }
+            
+            if (fogoApagado) {
+                atualizarHUD();
+                desenharJogo();
+                
+                if (jogo.focos.every(f => f.apagado)) {
+                    setTimeout(mostrarFimJogo, 1000);
+                } else {
+                    setTimeout(mostrarMensagemEducativa, 800);
+                }
+            } else {
+                alert('Não há fogo próximo para apagar!');
+            }
+        }
+        
+        function tocarSomApagar() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            } catch (e) {
+                // Silenciosamente falha se não houver suporte
+            }
+        }
+        
+        function mostrarMensagemEducativa() {
+            jogo.mensagemAtual = Math.floor(Math.random() * CONFIG_MENSAGENS.length);
+            const mensagem = CONFIG_MENSAGENS[jogo.mensagemAtual];
+            
+            document.getElementById('textoEducativo').textContent = mensagem.texto;
+            document.getElementById('dicaPratica').textContent = mensagem.dica;
+            document.getElementById('modalEducativo').classList.add('active');
+        }
+        
+        function mostrarOutraCuriosidade() {
+            let novaMensagem;
+            do {
+                novaMensagem = Math.floor(Math.random() * CONFIG_MENSAGENS.length);
+            } while (novaMensagem === jogo.mensagemAtual && CONFIG_MENSAGENS.length > 1);
+            
+            jogo.mensagemAtual = novaMensagem;
+            const mensagem = CONFIG_MENSAGENS[jogo.mensagemAtual];
+            
+            document.getElementById('textoEducativo').textContent = mensagem.texto;
+            document.getElementById('dicaPratica').textContent = mensagem.dica;
+        }
+        
+        function continuarJogo() {
+            document.getElementById('modalEducativo').classList.remove('active');
+        }
+        
+        function mostrarFimJogo() {
+            clearInterval(jogo.intervaloTempo);
+            
+            const pontuacao = Math.max(0, 10000 - (jogo.tempoDecorrido * 10) - (jogo.passos * 5));
+            
+            document.getElementById('tempoFinal').textContent = `${jogo.tempoDecorrido}s`;
+            document.getElementById('passosFinal').textContent = jogo.passos;
+            document.getElementById('focosFinal').textContent = jogo.focosApagados;
+            document.getElementById('pontuacaoFinal').textContent = Math.floor(pontuacao);
+            
+            const impactos = [
+                `Ao apagar ${jogo.focosApagados} foco(s), você evitou a emissão de aproximadamente ${jogo.focosApagados * 50}kg de CO₂ na atmosfera!`,
+                `Sua ação rápida protegeu cerca de ${jogo.focosApagados * 100}m² de vegetação nativa do ES!`,
+                `Você ajudou a preservar o habitat de diversas espécies da Mata Atlântica capixaba!`
+            ];
+            
+            document.getElementById('impactoEvitado').textContent = 
+                impactos[Math.floor(Math.random() * impactos.length)];
+            
+            document.getElementById('modalFimJogo').classList.add('active');
+        }
+        
+        function reiniciarJogo() {
+            document.getElementById('modalFimJogo').classList.remove('active');
+            iniciarJogo(jogo.dificuldade);
+        }
+        
+        function reiniciarAposDerrota() {
+            document.getElementById('modalDerrota').classList.remove('active');
+            iniciarJogo(jogo.dificuldade);
+        }
+        
+        function mostrarMaisInfo() {
+            document.getElementById('modalFimJogo').classList.remove('active');
+            document.getElementById('modalInfo').classList.add('active');
+        }
+        
+        function fecharModalInfo() {
+            document.getElementById('modalInfo').classList.remove('active');
+            document.getElementById('modalInicial').classList.add('active');
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+            
+            if (document.querySelector('.modal.active')) {
+                return;
+            }
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    moverJogador(0, -1);
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    moverJogador(0, 1);
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    moverJogador(-1, 0);
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    moverJogador(1, 0);
+                    break;
+                case ' ':
+                    jogarAgua();
+                    break;
+            }
+        });
+        
+        document.getElementById('btnUp').addEventListener('click', () => moverJogador(0, -1));
+        document.getElementById('btnDown').addEventListener('click', () => moverJogador(0, 1));
+        document.getElementById('btnLeft').addEventListener('click', () => moverJogador(-1, 0));
+        document.getElementById('btnRight').addEventListener('click', () => moverJogador(1, 0));
+        document.getElementById('btnAction').addEventListener('click', jogarAgua);
+        
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        
+        canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, false);
+        
+        canvas.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, false);
+        
+        function handleSwipe() {
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+            const threshold = 30;
+            
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (Math.abs(diffX) > threshold) {
+                    if (diffX > 0) {
+                        moverJogador(1, 0);
+                    } else {
+                        moverJogador(-1, 0);
+                    }
+                }
+            } else {
+                if (Math.abs(diffY) > threshold) {
+                    if (diffY > 0) {
+                        moverJogador(0, 1);
+                    } else {
+                        moverJogador(0, -1);
+                    }
+                }
+            }
+        }
+        
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                   || window.innerWidth < 768;
+        }
+        
+        if (isMobile()) {
+            document.getElementById('mobileControls').style.display = 'flex';
+        }
+        
+        window.addEventListener('resize', () => {
+            if (jogo.labirinto.length > 0) {
+                const maxCanvasSize = Math.min(window.innerWidth * 0.9, 800);
+                jogo.cellSize = Math.floor(maxCanvasSize / jogo.tamanho);
+                canvas.width = jogo.tamanho * jogo.cellSize;
+                canvas.height = jogo.tamanho * jogo.cellSize;
+                desenharJogo();
+            }
+            
+            if (isMobile()) {
+                document.getElementById('mobileControls').style.display = 'flex';
+            } else {
+                document.getElementById('mobileControls').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

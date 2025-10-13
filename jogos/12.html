@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardiões dos Rios do Espírito Santo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background: #f0f4f8;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .game-screen {
+            padding: 30px 20px;
+            min-height: 450px;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .river-animation {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            border-radius: 15px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120"><path d="M0,0 Q300,60 600,0 T1200,0 L1200,120 L0,120 Z" fill="rgba(255,255,255,0.3)"/></svg>');
+            background-size: 50% 100%;
+            animation: wave 8s linear infinite;
+        }
+
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .river-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .river-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .river-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .river-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .river-card p {
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #2a5298;
+        }
+
+        .info-box h3 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .map-container {
+            background: #f0f4f8;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            position: relative;
+            min-height: 400px;
+        }
+
+        .map-title {
+            text-align: center;
+            color: #1e3c72;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .basin-zones {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .basin-zone {
+            background: white;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 120px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .basin-zone.highlight {
+            background: #e8f4f8;
+            border-color: #2a5298;
+            transform: scale(1.05);
+        }
+
+        .basin-zone h4 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .river-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .river-chip {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: grab;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+
+        .river-chip:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .river-chip.placed {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .feedback.positive {
+            background: #c8e6c9;
+            color: #2e7d32;
+            border-left: 5px solid #4caf50;
+        }
+
+        .feedback.negative {
+            background: #ffcdd2;
+            color: #c62828;
+            border-left: 5px solid #f44336;
+        }
+
+        .result-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .trophy {
+            font-size: 5em;
+            margin: 20px 0;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .final-score {
+            font-size: 2.5em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .progress-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s;
+        }
+
+        .progress-dot.active {
+            background: #667eea;
+            transform: scale(1.3);
+        }
+
+        .progress-dot.completed {
+            background: #4caf50;
+        }
+
+        /* Caça-Palavras */
+        .word-search-container {
+            margin: 20px 0;
+        }
+
+        .word-search-grid {
+            display: grid;
+            gap: 3px;
+            margin: 20px auto;
+            max-width: 500px;
+            touch-action: none;
+        }
+
+        .word-search-cell {
+            aspect-ratio: 1;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #1e3c72;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .word-search-cell:hover {
+            background: #e8f4f8;
+            transform: scale(1.05);
+        }
+
+        .word-search-cell.selected {
+            background: #667eea;
+            color: white;
+            transform: scale(0.95);
+        }
+
+        .word-search-cell.found {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+            animation: foundPulse 0.5s;
+        }
+
+        @keyframes foundPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .words-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .word-item {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            text-align: center;
+            font-weight: bold;
+            color: #1e3c72;
+            transition: all 0.3s;
+        }
+
+        .word-item.found {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+            text-decoration: line-through;
+        }
+
+        .hint-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.4em;
+            }
+
+            .river-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .word-search-cell {
+                font-size: 1em;
+            }
+
+            .trophy {
+                font-size: 3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌊 Guardiões dos Rios do Espírito Santo 🌊</h1>
+            <p>Explore e proteja as bacias hidrográficas!</p>
+        </div>
+
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">Pontuação</div>
+                <div class="score-value" id="score">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Rio Escolhido</div>
+                <div class="score-value" id="selected-river" style="font-size: 1.2em;">-</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Fase</div>
+                <div class="score-value" id="current-phase">Início</div>
+            </div>
+        </div>
+
+        <div class="game-screen">
+            <!-- Tela Inicial -->
+            <div class="screen active" id="intro-screen">
+                <div class="river-animation">
+                    <div class="wave"></div>
+                </div>
+                
+                <h2 style="color: #1e3c72; text-align: center; margin-bottom: 20px;">
+                    Escolha um Rio para Explorar
+                </h2>
+
+                <div class="info-box">
+                    <h3>🎮 Como Jogar:</h3>
+                    <p><strong>1.</strong> Escolha um dos três rios principais do Espírito Santo</p>
+                    <p><strong>2.</strong> Aprenda sobre sua bacia hidrográfica</p>
+                    <p><strong>3.</strong> Complete a Fase 1: Identificação das Bacias (Arraste os rios)</p>
+                    <p><strong>4.</strong> Complete a Fase 2: Caça-Palavras Temático (Encontre palavras)</p>
+                    <p><strong>5.</strong> Ganhe pontos e conquiste medalhas!</p>
+                </div>
+
+                <div class="river-cards">
+                    <div class="river-card" onclick="selectRiver('doce')">
+                        <h3>🏞️ Rio Doce</h3>
+                        <p><strong>Extensão:</strong> 853 km</p>
+                        <p><strong>Região:</strong> Norte do ES</p>
+                        <p><strong>Importância:</strong> Maior rio do estado, fundamental para biodiversidade e abastecimento</p>
+                    </div>
+
+                    <div class="river-card" onclick="selectRiver('itapemirim')">
+                        <h3>🌾 Rio Itapemirim</h3>
+                        <p><strong>Extensão:</strong> 150 km</p>
+                        <p><strong>Região:</strong> Sul do ES</p>
+                        <p><strong>Importância:</strong> Essencial para agricultura e abastecimento do sul capixaba</p>
+                    </div>
+
+                    <div class="river-card" onclick="selectRiver('santamaria')">
+                        <h3>🏙️ Rio Santa Maria da Vitória</h3>
+                        <p><strong>Extensão:</strong> 122 km</p>
+                        <p><strong>Região:</strong> Região Metropolitana</p>
+                        <p><strong>Importância:</strong> Abastece milhões de pessoas na Grande Vitória</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Rio -->
+            <div class="screen" id="river-info-screen">
+                <h2 style="color: #1e3c72; text-align: center; margin-bottom: 20px;" id="river-title"></h2>
+                
+                <div class="river-animation">
+                    <div class="wave"></div>
+                </div>
+
+                <div class="info-box" id="river-details"></div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn" onclick="startPhase1()">Iniciar Fase 1 - Identificação →</button>
+                </div>
+            </div>
+
+            <!-- Fase 1 - Identificação das Bacias -->
+            <div class="screen" id="phase1-screen">
+                <div class="progress-indicator">
+                    <div class="progress-dot active"></div>
+                    <div class="progress-dot"></div>
+                </div>
+
+                <h2 style="color: #1e3c72; text-align: center; margin-bottom: 10px;">
+                    Fase 1: Identificação das Bacias
+                </h2>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                    Arraste cada rio para sua região correta no mapa do Espírito Santo
+                </p>
+
+                <div class="map-container">
+                    <div class="map-title">🗺️ Mapa do Espírito Santo</div>
+                    
+                    <div class="basin-zones">
+                        <div class="basin-zone" id="zone-norte" ondrop="drop(event)" ondragover="allowDrop(event)" data-region="norte">
+                            <h4>⬆️ Norte do ES</h4>
+                            <p style="font-size: 0.9em; color: #666;">Arraste o rio aqui</p>
+                            <div class="dropped-rivers"></div>
+                        </div>
+
+                        <div class="basin-zone" id="zone-central" ondrop="drop(event)" ondragover="allowDrop(event)" data-region="central">
+                            <h4>⚫ Região Central</h4>
+                            <p style="font-size: 0.9em; color: #666;">Arraste o rio aqui</p>
+                            <div class="dropped-rivers"></div>
+                        </div>
+
+                        <div class="basin-zone" id="zone-sul" ondrop="drop(event)" ondragover="allowDrop(event)" data-region="sul">
+                            <h4>⬇️ Sul do ES</h4>
+                            <p style="font-size: 0.9em; color: #666;">Arraste o rio aqui</p>
+                            <div class="dropped-rivers"></div>
+                        </div>
+                    </div>
+
+                    <div class="river-chips" id="river-chips">
+                        <div class="river-chip" draggable="true" ondragstart="drag(event)" id="chip-doce" data-river="doce" data-region="norte">
+                            💧 Rio Doce
+                        </div>
+                        <div class="river-chip" draggable="true" ondragstart="drag(event)" id="chip-santamaria" data-river="santamaria" data-region="central">
+                            💧 Rio Santa Maria da Vitória
+                        </div>
+                        <div class="river-chip" draggable="true" ondragstart="drag(event)" id="chip-itapemirim" data-river="itapemirim" data-region="sul">
+                            💧 Rio Itapemirim
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feedback" id="phase1-feedback"></div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn" id="check-phase1-btn" onclick="checkPhase1()" disabled>Verificar Respostas</button>
+                    <button class="btn btn-secondary" id="next-phase1-btn" onclick="startPhase2()" style="display: none;">Próxima Fase →</button>
+                </div>
+            </div>
+
+            <!-- Fase 2 - Caça-Palavras -->
+            <div class="screen" id="phase2-screen">
+                <div class="progress-indicator">
+                    <div class="progress-dot completed"></div>
+                    <div class="progress-dot active"></div>
+                </div>
+
+                <h2 style="color: #1e3c72; text-align: center; margin-bottom: 10px;">
+                    Fase 2: Caça-Palavras - Preservação dos Rios
+                </h2>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;" id="phase2-subtitle">
+                    Encontre palavras relacionadas à preservação e importância dos rios
+                </p>
+
+                <div class="hint-box">
+                    <strong>💡 Como jogar:</strong> Clique e arraste sobre as letras para selecionar as palavras. As palavras podem estar na horizontal, vertical ou diagonal!
+                </div>
+
+                <div class="word-search-container">
+                    <h3 style="color: #1e3c72; text-align: center; margin-bottom: 15px;">
+                        Palavras Encontradas: <span id="words-found">0</span>/<span id="total-words">0</span>
+                    </h3>
+
+                    <div class="words-list" id="words-list"></div>
+
+                    <div class="word-search-grid" id="word-search-grid"></div>
+                </div>
+
+                <div class="feedback" id="phase2-feedback"></div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-secondary" onclick="giveHint()">💡 Dica</button>
+                    <button class="btn" id="finish-btn" onclick="finishGame()" disabled>Finalizar Jogo</button>
+                </div>
+            </div>
+
+            <!-- Tela de Resultado -->
+            <div class="screen" id="result-screen">
+                <div class="result-screen">
+                    <h2 style="color: #1e3c72; margin-bottom: 20px;" id="result-title"></h2>
+                    <div class="trophy" id="trophy"></div>
+                    <div class="final-score" id="final-score"></div>
+                    <p style="font-size: 1.2em; color: #666; margin: 20px 0;" id="result-message"></p>
+                    
+                    <div class="info-box">
+                        <h3>🌟 Você Aprendeu Que:</h3>
+                        <p id="learning-summary"></p>
+                    </div>
+
+                    <button class="btn" onclick="restartGame()">🔄 Jogar Novamente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            selectedRiver: '',
+            score: 0,
+            phase1Complete: false,
+            wordsFound: 0,
+            totalWords: 0,
+            isSelecting: false,
+            selectedCells: [],
+            foundWords: []
+        };
+
+        const riverData = {
+            doce: {
+                name: 'Rio Doce',
+                icon: '🏞️',
+                info: `
+                    <h3>Sobre a Bacia do Rio Doce</h3>
+                    <p><strong>🌊 Extensão:</strong> 853 km (nasce em MG e deságua no ES)</p>
+                    <p><strong>🏙️ Cidades Atendidas:</strong> Linhares, Colatina, Baixo Guandu</p>
+                    <p><strong>💧 Características:</strong> Maior rio do ES, fundamental para a biodiversidade da Mata Atlântica</p>
+                    <p><strong>🌾 Usos:</strong> Abastecimento, pesca, agricultura e geração de energia</p>
+                    <p><strong>⚠️ Desafios:</strong> Recuperação após desastre de Mariana (2015), desmatamento e poluição</p>
+                `
+            },
+            itapemirim: {
+                name: 'Rio Itapemirim',
+                icon: '🌾',
+                info: `
+                    <h3>Sobre a Bacia do Rio Itapemirim</h3>
+                    <p><strong>🌊 Extensão:</strong> 150 km</p>
+                    <p><strong>🏙️ Cidades Atendidas:</strong> Cachoeiro de Itapemirim, Itapemirim</p>
+                    <p><strong>💧 Características:</strong> Principal rio do sul capixaba</p>
+                    <p><strong>🌾 Usos:</strong> Irrigação de lavouras, abastecimento urbano, indústria de rochas ornamentais</p>
+                    <p><strong>⚠️ Desafios:</strong> Uso excessivo para irrigação, assoreamento e poluição industrial</p>
+                `
+            },
+            santamaria: {
+                name: 'Rio Santa Maria da Vitória',
+                icon: '🏙️',
+                info: `
+                    <h3>Sobre a Bacia do Rio Santa Maria da Vitória</h3>
+                    <p><strong>🌊 Extensão:</strong> 122 km</p>
+                    <p><strong>🏙️ Cidades Atendidas:</strong> Vitória, Vila Velha, Serra, Cariacica</p>
+                    <p><strong>💧 Características:</strong> Mais importante para a Região Metropolitana</p>
+                    <p><strong>🌾 Usos:</strong> Abastecimento de mais de 1,5 milhão de pessoas</p>
+                    <p><strong>⚠️ Desafios:</strong> Pressão urbana, poluição por esgoto, ocupação irregular das margens</p>
+                `
+            }
+        };
+
+        const wordSearchWords = {
+            doce: ['BIODIVERSIDADE', 'LINHARES', 'NASCENTE', 'MANGUEZAL', 'PESCA', 'MATA', 'ENERGIA'],
+            itapemirim: ['AGRICULTURA', 'CACHOEIRO', 'IRRIGACAO', 'MARMORE', 'SUSTENTAVEL', 'CULTIVO', 'BACIA'],
+            santamaria: ['ABASTECIMENTO', 'VITORIA', 'SANEAMENTO', 'TRATAMENTO', 'URBANO', 'AGUA', 'PROTECAO']
+        };
+
+        const gridSize = 12;
+        let wordSearchGrid = [];
+        let wordPositions = {};
+
+        function selectRiver(river) {
+            gameState.selectedRiver = river;
+            gameState.score = 0;
+            updateScoreboard();
+            showRiverInfo();
+        }
+
+        function showRiverInfo() {
+            const data = riverData[gameState.selectedRiver];
+            document.getElementById('river-title').innerHTML = data.icon + ' ' + data.name;
+            document.getElementById('river-details').innerHTML = data.info;
+            showScreen('river-info-screen');
+        }
+
+        function startPhase1() {
+            document.getElementById('current-phase').textContent = 'Fase 1';
+            showScreen('phase1-screen');
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('highlight');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const chip = document.getElementById(data);
+            
+            ev.currentTarget.classList.remove('highlight');
+            
+            if (!chip.classList.contains('placed')) {
+                const droppedArea = ev.currentTarget.querySelector('.dropped-rivers');
+                droppedArea.appendChild(chip);
+                chip.classList.add('placed');
+                chip.draggable = false;
+                
+                checkIfAllPlaced();
+            }
+        }
+
+        document.querySelectorAll('.basin-zone').forEach(zone => {
+            zone.addEventListener('dragleave', function() {
+                this.classList.remove('highlight');
+            });
+        });
+
+        function checkIfAllPlaced() {
+            const chips = document.querySelectorAll('.river-chip');
+            const allPlaced = Array.from(chips).every(chip => chip.classList.contains('placed'));
+            document.getElementById('check-phase1-btn').disabled = !allPlaced;
+        }
+
+        function checkPhase1() {
+            const chips = document.querySelectorAll('.river-chip');
+            let correct = 0;
+            
+            chips.forEach(chip => {
+                const chipRegion = chip.dataset.region;
+                const parentZone = chip.closest('.basin-zone');
+                const zoneRegion = parentZone.dataset.region;
+                
+                if (chipRegion === zoneRegion) {
+                    chip.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
+                    correct++;
+                } else {
+                    chip.style.background = 'linear-gradient(135deg, #f44336 0%, #e53935 100%)';
+                }
+            });
+
+            const feedback = document.getElementById('phase1-feedback');
+            
+            if (correct === 3) {
+                feedback.className = 'feedback positive show';
+                feedback.innerHTML = '🎉 <strong>Parabéns!</strong> Você identificou corretamente todas as bacias hidrográficas! Os rios do Espírito Santo estão distribuídos estrategicamente para atender diferentes regiões do estado.';
+                gameState.score += 30;
+                gameState.phase1Complete = true;
+                document.getElementById('next-phase1-btn').style.display = 'inline-block';
+            } else {
+                feedback.className = 'feedback negative show';
+                feedback.innerHTML = `❌ Você acertou ${correct} de 3. Revise as posições e tente novamente!`;
+                setTimeout(() => resetPhase1(), 3000);
+            }
+            
+            updateScoreboard();
+            document.getElementById('check-phase1-btn').disabled = true;
+        }
+
+        function resetPhase1() {
+            const chipsContainer = document.getElementById('river-chips');
+            const chips = document.querySelectorAll('.river-chip');
+            
+            chips.forEach(chip => {
+                chip.classList.remove('placed');
+                chip.draggable = true;
+                chip.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                chipsContainer.appendChild(chip);
+            });
+            
+            document.getElementById('phase1-feedback').classList.remove('show');
+            document.getElementById('check-phase1-btn').disabled = true;
+        }
+
+        function startPhase2() {
+            document.getElementById('current-phase').textContent = 'Fase 2';
+            showScreen('phase2-screen');
+            initWordSearch();
+        }
+
+        function initWordSearch() {
+            const words = wordSearchWords[gameState.selectedRiver];
+            gameState.totalWords = words.length;
+            gameState.wordsFound = 0;
+            gameState.foundWords = [];
+            wordPositions = {};
+            
+            document.getElementById('total-words').textContent = gameState.totalWords;
+            document.getElementById('words-found').textContent = gameState.wordsFound;
+            
+            // Criar lista de palavras
+            const wordsList = document.getElementById('words-list');
+            wordsList.innerHTML = '';
+            words.forEach(word => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                wordItem.textContent = word;
+                wordItem.id = 'word-' + word;
+                wordsList.appendChild(wordItem);
+            });
+            
+            // Criar grade
+            createWordSearchGrid(words);
+        }
+
+        function createWordSearchGrid(words) {
+            wordSearchGrid = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
+            
+            // Colocar palavras
+            words.forEach(word => {
+                let placed = false;
+                let attempts = 0;
+                while (!placed && attempts < 100) {
+                    const direction = Math.floor(Math.random() * 3); // 0: horizontal, 1: vertical, 2: diagonal
+                    const row = Math.floor(Math.random() * gridSize);
+                    const col = Math.floor(Math.random() * gridSize);
+                    
+                    if (canPlaceWord(word, row, col, direction)) {
+                        placeWord(word, row, col, direction);
+                        placed = true;
+                    }
+                    attempts++;
+                }
+            });
+            
+            // Preencher espaços vazios
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    if (!wordSearchGrid[i][j]) {
+                        wordSearchGrid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                    }
+                }
+            }
+            
+            renderGrid();
+        }
+
+        function canPlaceWord(word, row, col, direction) {
+            const len = word.length;
+            
+            if (direction === 0) { // Horizontal
+                if (col + len > gridSize) return false;
+                for (let i = 0; i < len; i++) {
+                    if (wordSearchGrid[row][col + i] && wordSearchGrid[row][col + i] !== word[i]) {
+                        return false;
+                    }
+                }
+            } else if (direction === 1) { // Vertical
+                if (row + len > gridSize) return false;
+                for (let i = 0; i < len; i++) {
+                    if (wordSearchGrid[row + i][col] && wordSearchGrid[row + i][col] !== word[i]) {
+                        return false;
+                    }
+                }
+            } else { // Diagonal
+                if (row + len > gridSize || col + len > gridSize) return false;
+                for (let i = 0; i < len; i++) {
+                    if (wordSearchGrid[row + i][col + i] && wordSearchGrid[row + i][col + i] !== word[i]) {
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
+
+        function placeWord(word, row, col, direction) {
+            const positions = [];
+            
+            for (let i = 0; i < word.length; i++) {
+                let r = row, c = col;
+                if (direction === 0) c += i;
+                else if (direction === 1) r += i;
+                else { r += i; c += i; }
+                
+                wordSearchGrid[r][c] = word[i];
+                positions.push({ row: r, col: c });
+            }
+            
+            wordPositions[word] = positions;
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('word-search-grid');
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'word-search-cell';
+                    cell.textContent = wordSearchGrid[i][j];
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    
+                    cell.addEventListener('mousedown', startSelection);
+                    cell.addEventListener('mouseenter', continueSelection);
+                    cell.addEventListener('mouseup', endSelection);
+                    
+                    // Touch events
+                    cell.addEventListener('touchstart', handleTouchStart);
+                    cell.addEventListener('touchmove', handleTouchMove);
+                    cell.addEventListener('touchend', endSelection);
+                    
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function startSelection(e) {
+            gameState.isSelecting = true;
+            gameState.selectedCells = [];
+            const cell = e.target;
+            if (cell.classList.contains('word-search-cell') && !cell.classList.contains('found')) {
+                cell.classList.add('selected');
+                gameState.selectedCells.push(cell);
+            }
+        }
+
+        function continueSelection(e) {
+            if (!gameState.isSelecting) return;
+            const cell = e.target;
+            if (cell.classList.contains('word-search-cell') && !cell.classList.contains('found') && !cell.classList.contains('selected')) {
+                cell.classList.add('selected');
+                gameState.selectedCells.push(cell);
+            }
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            gameState.isSelecting = true;
+            gameState.selectedCells = [];
+            const cell = e.target;
+            if (cell.classList.contains('word-search-cell') && !cell.classList.contains('found')) {
+                cell.classList.add('selected');
+                gameState.selectedCells.push(cell);
+            }
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (!gameState.isSelecting) return;
+            const touch = e.touches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (element && element.classList.contains('word-search-cell') && !element.classList.contains('found') && !element.classList.contains('selected')) {
+                element.classList.add('selected');
+                gameState.selectedCells.push(element);
+            }
+        }
+
+        function endSelection() {
+            gameState.isSelecting = false;
+            
+            if (gameState.selectedCells.length > 0) {
+                const word = gameState.selectedCells.map(cell => cell.textContent).join('');
+                checkWord(word);
+            }
+            
+            // Limpar seleção se não for palavra válida
+            setTimeout(() => {
+                document.querySelectorAll('.word-search-cell.selected').forEach(cell => {
+                    if (!cell.classList.contains('found')) {
+                        cell.classList.remove('selected');
+                    }
+                });
+                gameState.selectedCells = [];
+            }, 300);
+        }
+
+        function checkWord(selectedWord) {
+            const words = wordSearchWords[gameState.selectedRiver];
+            
+            // Verificar palavra normal e invertida
+            const normalWord = selectedWord;
+            const reversedWord = selectedWord.split('').reverse().join('');
+            
+            let foundWord = null;
+            if (words.includes(normalWord) && !gameState.foundWords.includes(normalWord)) {
+                foundWord = normalWord;
+            } else if (words.includes(reversedWord) && !gameState.foundWords.includes(reversedWord)) {
+                foundWord = reversedWord;
+            }
+            
+            if (foundWord) {
+                gameState.foundWords.push(foundWord);
+                gameState.wordsFound++;
+                gameState.score += 15;
+                
+                // Marcar células como encontradas
+                gameState.selectedCells.forEach(cell => {
+                    cell.classList.add('found');
+                    cell.classList.remove('selected');
+                });
+                
+                // Marcar palavra na lista
+                const wordItem = document.getElementById('word-' + foundWord);
+                if (wordItem) {
+                    wordItem.classList.add('found');
+                }
+                
+                document.getElementById('words-found').textContent = gameState.wordsFound;
+                updateScoreboard();
+                
+                // Feedback
+                const feedback = document.getElementById('phase2-feedback');
+                feedback.className = 'feedback positive show';
+                feedback.innerHTML = `✅ <strong>Palavra encontrada!</strong> ${foundWord}`;
+                
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 2000);
+                
+                // Verificar se completou
+                if (gameState.wordsFound === gameState.totalWords) {
+                    setTimeout(() => {
+                        feedback.className = 'feedback positive show';
+                        feedback.innerHTML = '🎉 <strong>Parabéns!</strong> Você encontrou todas as palavras!';
+                        document.getElementById('finish-btn').disabled = false;
+                    }, 500);
+                }
+            }
+        }
+
+        function giveHint() {
+            const words = wordSearchWords[gameState.selectedRiver];
+            const remainingWords = words.filter(w => !gameState.foundWords.includes(w));
+            
+            if (remainingWords.length === 0) return;
+            
+            const hintWord = remainingWords[0];
+            const positions = wordPositions[hintWord];
+            
+            if (positions && positions.length > 0) {
+                // Destacar primeira letra
+                const firstPos = positions[0];
+                const cells = document.querySelectorAll('.word-search-cell');
+                cells.forEach(cell => {
+                    if (parseInt(cell.dataset.row) === firstPos.row && parseInt(cell.dataset.col) === firstPos.col) {
+                        cell.style.background = '#ffc107';
+                        setTimeout(() => {
+                            if (!cell.classList.contains('found')) {
+                                cell.style.background = '';
+                            }
+                        }, 2000);
+                    }
+                });
+                
+                const feedback = document.getElementById('phase2-feedback');
+                feedback.className = 'feedback show';
+                feedback.style.background = '#fff3cd';
+                feedback.style.color = '#856404';
+                feedback.style.borderLeft = '5px solid #ffc107';
+                feedback.innerHTML = `💡 <strong>Dica:</strong> Procure a palavra "${hintWord}" - primeira letra destacada em amarelo!`;
+                
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 4000);
+            }
+        }
+
+        function finishGame() {
+            showResults();
+        }
+
+        function showResults() {
+            showScreen('result-screen');
+            
+            const maxScore = 45 + (gameState.totalWords * 15); // 30 (fase 1) + 15 (fase 2 por palavra)
+            const percentage = (gameState.score / maxScore) * 100;
+            let title, trophy, message, learning;
+            
+            const riverName = riverData[gameState.selectedRiver].name;
+            
+            if (percentage >= 90) {
+                title = '🏆 Guardião Mestre!';
+                trophy = '🏆';
+                message = `Parabéns! Você dominou o conhecimento sobre o ${riverName} e completou todas as fases com excelência!`;
+            } else if (percentage >= 70) {
+                title = '🥈 Guardião Consciente!';
+                trophy = '🥈';
+                message = `Muito bem! Você mostrou compromisso com a preservação do ${riverName}!`;
+            } else if (percentage >= 50) {
+                title = '🥉 Guardião Iniciante!';
+                trophy = '🥉';
+                message = `Bom trabalho! Continue aprendendo sobre como proteger o ${riverName}!`;
+            } else {
+                title = '📚 Continue Aprendendo!';
+                trophy = '📚';
+                message = `Não desanime! Cada jogo é uma oportunidade de aprender mais sobre nossos rios!`;
+            }
+            
+            learning = `O ${riverName} é fundamental para o Espírito Santo. Você aprendeu sobre: localização das bacias hidrográficas, importância do abastecimento, preservação ambiental, biodiversidade, agricultura sustentável, saneamento básico e tratamento de água. Cada cidadão pode fazer a diferença na proteção dos nossos rios!`;
+            
+            document.getElementById('result-title').textContent = title;
+            document.getElementById('trophy').textContent = trophy;
+            document.getElementById('final-score').textContent = gameState.score + ' pontos';
+            document.getElementById('result-message').textContent = message;
+            document.getElementById('learning-summary').textContent = learning;
+        }
+
+        function updateScoreboard() {
+            document.getElementById('score').textContent = gameState.score;
+            const riverName = gameState.selectedRiver ? riverData[gameState.selectedRiver].icon : '-';
+            document.getElementById('selected-river').textContent = riverName;
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function restartGame() {
+            gameState = {
+                selectedRiver: '',
+                score: 0,
+                phase1Complete: false,
+                wordsFound: 0,
+                totalWords: 0,
+                isSelecting: false,
+                selectedCells: [],
+                foundWords: []
+            };
+            updateScoreboard();
+            document.getElementById('current-phase').textContent = 'Início';
+            resetPhase1();
+            showScreen('intro-screen');
+        }
+
+        // Prevenir comportamento padrão de arrastar em mobile
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.classList.contains('word-search-cell')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Defesa Costeira - Sandbox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+            overflow: hidden;
+            touch-action: none;
+        }
+        #gameContainer {
+            position: relative;
+            background: #1a1a1a;
+            border: 4px solid #333;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+        #gameCanvas {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            max-width: 100%;
+            height: auto;
+        }
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: all;
+            z-index: 100;
+            padding: 20px;
+        }
+        #startScreen.hidden {
+            display: none;
+        }
+        #startScreen h1 {
+            font-size: clamp(24px, 6vw, 48px);
+            color: #4da6ff;
+            text-shadow: 4px 4px 0 #1a5490;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #startScreen p {
+            font-size: clamp(14px, 3vw, 18px);
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 90%;
+        }
+        #startBtn {
+            font-size: clamp(18px, 4vw, 24px);
+            padding: 15px 40px;
+            background: #4da6ff;
+            color: white;
+            border: 4px solid #1a5490;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            pointer-events: all;
+            touch-action: manipulation;
+        }
+        #startBtn:hover, #startBtn:active {
+            background: #1a5490;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: all;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        #playPauseBtn {
+            font-size: clamp(16px, 3vw, 20px);
+            padding: 10px 20px;
+            background: #4da6ff;
+            color: white;
+            border: 3px solid #1a5490;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            touch-action: manipulation;
+        }
+        #playPauseBtn:hover, #playPauseBtn:active {
+            background: #1a5490;
+        }
+        #stats {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .stat {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 15px;
+            border: 2px solid #4da6ff;
+            font-size: clamp(12px, 2.5vw, 16px);
+        }
+        #toolbar {
+            position: absolute;
+            left: 10px;
+            top: 70px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #333;
+            padding: 8px;
+            pointer-events: all;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+        .tool {
+            width: clamp(40px, 8vw, 50px);
+            height: clamp(40px, 8vw, 50px);
+            margin: 5px;
+            border: 3px solid #555;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(16px, 3.5vw, 20px);
+            background: #222;
+            touch-action: manipulation;
+            position: relative;
+        }
+        .tool-value {
+            font-size: clamp(8px, 1.5vw, 10px);
+            color: #44ff44;
+            font-weight: bold;
+        }
+        .tool:hover, .tool:active {
+            border-color: #4da6ff;
+            background: #333;
+        }
+        .tool.active {
+            border-color: #4da6ff;
+            background: #1a5490;
+            box-shadow: 0 0 10px #4da6ff;
+        }
+        #brushSizeContainer {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border-top: 2px solid #333;
+            margin-top: 5px;
+        }
+        #brushSizeLabel {
+            font-size: clamp(10px, 2vw, 12px);
+            color: #4da6ff;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        #brushSize {
+            width: 100%;
+            cursor: pointer;
+        }
+        #message {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 15px 20px;
+            border: 3px solid #4da6ff;
+            font-size: clamp(12px, 2.5vw, 16px);
+            text-align: center;
+            max-width: 90%;
+            display: none;
+            pointer-events: none;
+            line-height: 1.4;
+        }
+        #message.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        #gameOver {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: all;
+            z-index: 100;
+            padding: 20px;
+        }
+        #gameOver.show {
+            display: flex;
+        }
+        #gameOver h2 {
+            font-size: clamp(28px, 6vw, 48px);
+            color: #ff4444;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #gameOver p {
+            font-size: clamp(14px, 3vw, 18px);
+            max-width: 90%;
+            text-align: center;
+            line-height: 1.5;
+        }
+        #restartBtn {
+            font-size: clamp(16px, 3.5vw, 20px);
+            padding: 15px 40px;
+            background: #4da6ff;
+            color: white;
+            border: 4px solid #1a5490;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-top: 20px;
+            touch-action: manipulation;
+        }
+        #restartBtn:hover, #restartBtn:active {
+            background: #1a5490;
+        }
+        @media (max-width: 768px) {
+            #gameContainer {
+                border-width: 2px;
+            }
+            #toolbar {
+                top: 60px;
+                left: 5px;
+                padding: 5px;
+            }
+            #controls {
+                top: 5px;
+                left: 5px;
+                right: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1000" height="700"></canvas>
+        <div id="ui">
+            <div id="startScreen">
+                <h1>🌊 DEFESA COSTEIRA 🏖️</h1>
+                <p>
+                    Proteja as falésias da erosão marinha!<br>
+                    Plantas (+2), Pedras (+5) e Estruturas (+8)<br>
+                    A força da onda DUPLICA a cada rodada!
+                </p>
+                <button id="startBtn">INICIAR JOGO</button>
+            </div>
+            
+            <div id="controls">
+                <button id="playPauseBtn">▶️ LANÇAR ONDA</button>
+                <div id="stats">
+                    <div class="stat">Força da Onda: <span id="waveStrength">1</span></div>
+                    <div class="stat">Defesa Total: <span id="totalDefense">0</span></div>
+                    <div class="stat">Tamanho Falésia: <span id="cliffSize">100%</span></div>
+                </div>
+            </div>
+            
+            <div id="toolbar">
+                <div class="tool active" data-tool="rock" title="Pedras (+5)">
+                    🪨<br><span class="tool-value">+5</span>
+                </div>
+                <div class="tool" data-tool="vegetation" title="Vegetação (+2)">
+                    🌱<br><span class="tool-value">+2</span>
+                </div>
+                <div class="tool" data-tool="structure" title="Estrutura (+8)">
+                    🏗️<br><span class="tool-value">+8</span>
+                </div>
+                <div class="tool" data-tool="erase" title="Remover">
+                    ❌
+                </div>
+                <div id="brushSizeContainer">
+                    <div id="brushSizeLabel">Tamanho: 1x1</div>
+                    <input type="range" id="brushSize" min="1" max="5" value="1">
+                </div>
+            </div>
+            
+            <div id="message"></div>
+            
+            <div id="gameOver">
+                <h2>FIM DE JOGO</h2>
+                <p style="margin-bottom: 10px;">As falésias foram completamente destruídas!</p>
+                <p style="color: #ff4444;">
+                    A erosão costeira causa perda de habitat, destruição de ecossistemas marinhos 
+                    e desaparecimento de espécies nativas. 🌍💔
+                </p>
+                <button id="restartBtn">JOGAR NOVAMENTE</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const TILE_SIZE = 10;
+        const GRID_WIDTH = canvas.width / TILE_SIZE;
+        const GRID_HEIGHT = canvas.height / TILE_SIZE;
+
+        // Mensagens
+        const POSITIVE_MESSAGES = [
+            "✅ 85% da biodiversidade costeira preservada!",
+            "✅ Erosão reduzida em 70% com vegetação nativa",
+            "✅ Falésias estáveis protegem 200 espécies marinhas",
+            "✅ 90% das comunidades costeiras seguras",
+            "✅ Ecossistema recuperado: +40% vida marinha",
+            "✅ Barreira natural evita prejuízos de R$ 2mi/ano",
+            "✅ 75% do solo costeiro conservado com sucesso",
+            "✅ Turismo sustentável: +50% renda local"
+        ];
+
+        const NEGATIVE_MESSAGES = [
+            "❌ Erosão avançada: 30% da costa destruída",
+            "❌ Habitats perdidos: -150 espécies ameaçadas",
+            "❌ Prejuízo: R$ 500 mil em danos anuais",
+            "❌ 40% das comunidades litorâneas em risco",
+            "❌ Salinização: 25% da agricultura costeira perdida",
+            "❌ Infraestrutura: 15km de estradas comprometidas",
+            "❌ Turismo reduzido: -60% na economia local",
+            "❌ Aquíferos costeiros contaminados com sal"
+        ];
+
+        // Game state
+        let gameState = {
+            playing: false,
+            waveStrength: 1,
+            currentTool: 'rock',
+            brushSize: 1,
+            grid: [],
+            animating: false,
+            waveAnimFrame: 0,
+            cliffSize: 100,
+            totalDefense: 0
+        };
+
+        // Initialize grid - Vista de cima
+        function initGrid() {
+            gameState.grid = [];
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                gameState.grid[y] = [];
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    let type = 'empty';
+                    
+                    // Mar (esquerda - azul)
+                    if (x < 25) {
+                        type = 'water';
+                    }
+                    // Praia (meio - amarelo)
+                    else if (x >= 25 && x < 65) {
+                        type = 'sand';
+                    }
+                    // Falésia (direita - marrom/cinza)
+                    else if (x >= 65) {
+                        type = 'cliff';
+                    }
+                    
+                    gameState.grid[y][x] = { 
+                        type, 
+                        permanent: type === 'cliff',
+                        shadow: 0
+                    };
+                }
+            }
+            calculateShadows();
+        }
+
+        // Calcular sombreamento
+        function calculateShadows() {
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    const cell = gameState.grid[y][x];
+                    
+                    // Sombra baseada em células adjacentes
+                    if (y > 0 && x > 0) {
+                        const topLeft = gameState.grid[y-1][x-1];
+                        const top = gameState.grid[y-1][x];
+                        const left = gameState.grid[y][x-1];
+                        
+                        if ((topLeft.type !== 'empty' && topLeft.type !== 'water') || 
+                            (top.type !== 'empty' && top.type !== 'water') ||
+                            (left.type !== 'empty' && left.type !== 'water')) {
+                            cell.shadow = 0.15;
+                        }
+                    }
+                    
+                    // Sombra especial para bordas
+                    if (cell.type === 'cliff' && x === 65) {
+                        cell.shadow = 0.3;
+                    }
+                }
+            }
+        }
+
+        // Draw pixel with shadow
+        function drawPixelWithShadow(x, y, baseColor, shadow = 0) {
+            const rgb = hexToRgb(baseColor);
+            const r = Math.max(0, Math.floor(rgb.r * (1 - shadow)));
+            const g = Math.max(0, Math.floor(rgb.g * (1 - shadow)));
+            const b = Math.max(0, Math.floor(rgb.b * (1 - shadow)));
+            
+            ctx.fillStyle = `rgb(${r},${g},${b})`;
+            ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
+
+        function hexToRgb(hex) {
+            const bigint = parseInt(hex.slice(1), 16);
+            return {
+                r: (bigint >> 16) & 255,
+                g: (bigint >> 8) & 255,
+                b: bigint & 255
+            };
+        }
+
+        // Render grid com vista de cima
+        function render() {
+            // Background (céu/horizonte)
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            gradient.addColorStop(0, '#87ceeb');
+            gradient.addColorStop(0.5, '#b0d4f1');
+            gradient.addColorStop(1, '#d4e8f7');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    const cell = gameState.grid[y][x];
+                    let color;
+                    const variant = (x * 7 + y * 11) % 10;
+                    
+                    switch(cell.type) {
+                        case 'water':
+                            // Água animada com ondulações
+                            const waveOffset = Math.sin((x + gameState.waveAnimFrame * 0.5) * 0.2 + y * 0.1) * 5;
+                            const waveOffset2 = Math.cos((y + gameState.waveAnimFrame * 0.3) * 0.15 + x * 0.08) * 3;
+                            const waterR = Math.floor(26 + waveOffset + waveOffset2);
+                            const waterG = Math.floor(84 + waveOffset);
+                            const waterB = Math.floor(144 + waveOffset2);
+                            color = `#${((1 << 24) + (waterR << 16) + (waterG << 8) + waterB).toString(16).slice(1)}`;
+                            
+                            drawPixelWithShadow(x, y, color, cell.shadow);
+                            
+                            // Espuma nas bordas
+                            if (x === 24 && (y + gameState.waveAnimFrame) % 4 === 0) {
+                                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                            }
+                            break;
+                            
+                        case 'sand':
+                            const sandVariant = variant - 5;
+                            const sandR = 244 + sandVariant;
+                            const sandG = 208 + sandVariant;
+                            const sandB = 63 + sandVariant;
+                            color = `#${((1 << 24) + (sandR << 16) + (sandG << 8) + sandB).toString(16).slice(1)}`;
+                            drawPixelWithShadow(x, y, color, cell.shadow);
+                            
+                            // Textura de areia
+                            if ((x + y) % 7 === 0) {
+                                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, 2, 2);
+                            }
+                            break;
+                            
+                        case 'cliff':
+                            const cliffVariant = variant - 5;
+                            const cliffR = 139 + cliffVariant;
+                            const cliffG = 90 + cliffVariant;
+                            const cliffB = 43 + cliffVariant;
+                            color = `#${((1 << 24) + (cliffR << 16) + (cliffG << 8) + cliffB).toString(16).slice(1)}`;
+                            drawPixelWithShadow(x, y, color, cell.shadow + 0.1);
+                            
+                            // Rachadura nas falésias danificadas
+                            if (gameState.cliffSize < 80 && (x + y) % 5 === 0) {
+                                ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(x * TILE_SIZE, y * TILE_SIZE);
+                                ctx.lineTo((x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE);
+                                ctx.stroke();
+                            }
+                            break;
+                            
+                        case 'rock':
+                            const rockVariant = variant;
+                            const rockVal = 112 + rockVariant;
+                            color = `#${((1 << 24) + (rockVal << 16) + ((rockVal + 8) << 8) + (rockVal + 16)).toString(16).slice(1)}`;
+                            drawPixelWithShadow(x, y, color, cell.shadow + 0.2);
+                            
+                            // Brilho nas pedras
+                            if ((x + y) % 3 === 0) {
+                                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, 3, 3);
+                            }
+                            break;
+                            
+                        case 'vegetation':
+                            const vegVariant = variant;
+                            const vegG = 139 + vegVariant;
+                            const vegR = 34 + Math.floor(vegVariant / 2);
+                            color = `#${((1 << 24) + (vegR << 16) + (vegG << 8) + 34).toString(16).slice(1)}`;
+                            drawPixelWithShadow(x, y, color, cell.shadow);
+                            
+                            // Folhas
+                            if ((x + y) % 2 === 0) {
+                                ctx.fillStyle = 'rgba(0,100,0,0.3)';
+                                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE/2, TILE_SIZE/2);
+                            }
+                            break;
+                            
+                        case 'structure':
+                            const structVariant = variant - 3;
+                            const structR = 139 + structVariant;
+                            const structG = 69 + Math.floor(structVariant / 2);
+                            color = `#${((1 << 24) + (structR << 16) + (structG << 8) + 19).toString(16).slice(1)}`;
+                            drawPixelWithShadow(x, y, color, cell.shadow + 0.15);
+                            
+                            // Textura de madeira
+                            if (y % 2 === 0) {
+                                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE + TILE_SIZE/2, TILE_SIZE, 1);
+                            }
+                            break;
+                            
+                        default:
+                            continue;
+                    }
+                }
+            }
+        }
+
+        // Animation loop
+        function animate() {
+            gameState.waveAnimFrame++;
+            render();
+            requestAnimationFrame(animate);
+        }
+
+        // Calcular defesa total
+        function calculateTotalDefense() {
+            let total = 0;
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 25; x < 65; x++) {
+                    const cell = gameState.grid[y][x];
+                    if (cell.type === 'vegetation') total += 2;
+                    if (cell.type === 'rock') total += 5;
+                    if (cell.type === 'structure') total += 8;
+                }
+            }
+            gameState.totalDefense = total;
+            document.getElementById('totalDefense').textContent = total;
+            return total;
+        }
+
+        // Handle canvas interaction
+        function handleCanvasInteraction(e) {
+            if (gameState.animating) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            
+            if (e.type.includes('touch')) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            const x = Math.floor((clientX - rect.left) / (rect.width / GRID_WIDTH));
+            const y = Math.floor((clientY - rect.top) / (rect.height / GRID_HEIGHT));
+            
+            const brushSize = gameState.brushSize;
+            const halfBrush = Math.floor(brushSize / 2);
+            
+            for (let by = -halfBrush; by <= halfBrush; by++) {
+                for (let bx = -halfBrush; bx <= halfBrush; bx++) {
+                    const nx = x + bx;
+                    const ny = y + by;
+                    
+                    if (nx >= 0 && nx < GRID_WIDTH && ny >= 0 && ny < GRID_HEIGHT) {
+                        const cell = gameState.grid[ny][nx];
+                        if (!cell.permanent) {
+                            if (gameState.currentTool === 'erase') {
+                                // Verifica tipo original do terreno
+                                if (nx < 25) cell.type = 'water';
+                                else if (nx >= 25 && nx < 65) cell.type = 'sand';
+                                else cell.type = 'empty';
+                            } else {
+                                // Vegetação só pode ser plantada na areia
+                                if (gameState.currentTool === 'vegetation') {
+                                    if (nx >= 25 && nx < 65) {
+                                        cell.type = gameState.currentTool;
+                                    }
+                                } else {
+                                    cell.type = gameState.currentTool;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            applyGravity();
+            calculateShadows();
+            calculateTotalDefense();
+        }
+
+        // Aplicar gravidade (água e areia caem)
+        function applyGravity() {
+            let changed = true;
+            while (changed) {
+                changed = false;
+                for (let y = GRID_HEIGHT - 2; y >= 0; y--) {
+                    for (let x = 0; x < GRID_WIDTH; x++) {
+                        const cell = gameState.grid[y][x];
+                        const below = gameState.grid[y + 1][x];
+                        
+                        if ((cell.type === 'sand' || cell.type === 'water') && 
+                            below.type === 'empty' && !below.permanent) {
+                            below.type = cell.type;
+                            if (x < 25) cell.type = 'water';
+                            else if (x >= 25 && x < 65) cell.type = 'sand';
+                            else cell.type = 'empty';
+                            changed = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            canvas.isDrawing = true;
+            handleCanvasInteraction(e);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (canvas.isDrawing) {
+                handleCanvasInteraction(e);
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            canvas.isDrawing = false;
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleCanvasInteraction(e);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            handleCanvasInteraction(e);
+        });
+
+        // Tool selection
+        document.querySelectorAll('.tool').forEach(tool => {
+            tool.addEventListener('click', () => {
+                document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+                tool.classList.add('active');
+                gameState.currentTool = tool.dataset.tool;
+            });
+        });
+
+        // Brush size
+        document.getElementById('brushSize').addEventListener('input', (e) => {
+            gameState.brushSize = parseInt(e.target.value);
+            document.getElementById('brushSizeLabel').textContent = `Tamanho: ${gameState.brushSize}x${gameState.brushSize}`;
+        });
+
+        // Play button
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
+            if (gameState.animating) return;
+            startWave();
+        });
+
+        // Start button
+        document.getElementById('startBtn').addEventListener('click', () => {
+            document.getElementById('startScreen').classList.add('hidden');
+            initGrid();
+            calculateTotalDefense();
+            animate();
+        });
+
+        // Restart button
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            document.getElementById('gameOver').classList.remove('show');
+            gameState.waveStrength = 1;
+            gameState.cliffSize = 100;
+            gameState.totalDefense = 0;
+            document.getElementById('waveStrength').textContent = '1';
+            document.getElementById('totalDefense').textContent = '0';
+            document.getElementById('cliffSize').textContent = '100%';
+            initGrid();
+        });
+
+        // Wave animation
+        async function startWave() {
+            gameState.animating = true;
+            
+            const defense = calculateTotalDefense();
+            const waveHitsCliff = gameState.waveStrength > defense;
+            
+            // Animação da água avançando
+            if (waveHitsCliff) {
+                const originalGrid = JSON.parse(JSON.stringify(gameState.grid));
+                
+                for (let frame = 0; frame < 30; frame++) {
+                    // Água avança temporariamente
+                    for (let y = 0; y < GRID_HEIGHT; y++) {
+                        const advanceX = Math.min(64, 25 + Math.floor(frame * 1.3));
+                        if (advanceX < GRID_WIDTH && gameState.grid[y][advanceX].type !== 'cliff') {
+                            gameState.grid[y][advanceX].type = 'water';
+                        }
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+                
+                // Restaura grid original após animação
+                for (let y = 0; y < GRID_HEIGHT; y++) {
+                    for (let x = 25; x < 65; x++) {
+                        if (originalGrid[y][x].type !== 'water') {
+                            gameState.grid[y][x].type = originalGrid[y][x].type;
+                        }
+                    }
+                }
+                
+                // Danifica falésia
+                const damageAmount = 10;
+                gameState.cliffSize = Math.max(0, gameState.cliffSize - damageAmount);
+                document.getElementById('cliffSize').textContent = Math.round(gameState.cliffSize) + '%';
+                
+                // Reduz tamanho visual da falésia
+                const removeRows = Math.floor((100 - gameState.cliffSize) / 10);
+                for (let i = 0; i < removeRows; i++) {
+                    for (let x = 65; x < GRID_WIDTH; x++) {
+                        if (GRID_HEIGHT - i - 1 >= 0) {
+                            gameState.grid[GRID_HEIGHT - i - 1][x].type = 'empty';
+                            gameState.grid[GRID_HEIGHT - i - 1][x].permanent = false;
+                        }
+                    }
+                }
+                
+                // Flash vermelho
+                ctx.fillStyle = 'rgba(255,0,0,0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                const randomMessage = NEGATIVE_MESSAGES[Math.floor(Math.random() * NEGATIVE_MESSAGES.length)];
+                showMessage(randomMessage, 'error');
+            } else {
+                // Animação de defesa bem-sucedida
+                for (let flash = 0; flash < 3; flash++) {
+                    ctx.fillStyle = 'rgba(0,255,0,0.2)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                    render();
+                    await new Promise(resolve => setTimeout(resolve, 150));
+                }
+                
+                const randomMessage = POSITIVE_MESSAGES[Math.floor(Math.random() * POSITIVE_MESSAGES.length)];
+                showMessage(randomMessage, 'success');
+            }
+            
+            // Check game over
+            if (gameState.cliffSize <= 0) {
+                setTimeout(() => {
+                    document.getElementById('gameOver').classList.add('show');
+                }, 2000);
+            } else {
+                // Duplica força da onda
+                gameState.waveStrength *= 2;
+                document.getElementById('waveStrength').textContent = gameState.waveStrength;
+            }
+            
+            applyGravity();
+            calculateShadows();
+            
+            setTimeout(() => {
+                gameState.animating = false;
+            }, 1000);
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.style.borderColor = type === 'error' ? '#ff4444' : '#44ff44';
+            msg.style.color = type === 'error' ? '#ff4444' : '#44ff44';
+            msg.classList.add('show');
+            
+            setTimeout(() => {
+                msg.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

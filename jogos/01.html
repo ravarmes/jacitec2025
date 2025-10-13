@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tartaruga Capixaba</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #001a33;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #004080, #0066a3, #008cb3, #00a8cc);
+        }
+
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 26, 51, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            z-index: 10;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        h1 {
+            font-size: clamp(20px, 5vw, 38px);
+            margin: 15px 0;
+            color: #4DD0E1;
+        }
+
+        h2 {
+            font-size: clamp(22px, 5.5vw, 36px);
+            margin: 15px 0;
+            color: #4DD0E1;
+        }
+
+        p {
+            font-size: clamp(12px, 3vw, 16px);
+            margin: 5px 0;
+            max-width: 650px;
+            line-height: 1.5;
+        }
+
+        button {
+            padding: 16px 40px;
+            font-size: clamp(18px, 4.5vw, 24px);
+            background: linear-gradient(135deg, #00ACC1, #0097A7);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.4);
+            transition: transform 0.2s;
+            min-height: 50px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #hud {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            z-index: 5;
+            pointer-events: none;
+            gap: 6px;
+        }
+
+        .hudItem {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 14px;
+            border-radius: 8px;
+            color: white;
+            font-size: clamp(13px, 3vw, 18px);
+            font-weight: bold;
+            border: 2px solid #4DD0E1;
+        }
+
+        .instructions {
+            background: rgba(0, 150, 167, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            margin: 10px 0;
+            border: 2px solid #4DD0E1;
+            backdrop-filter: blur(10px);
+            max-width: 95%;
+        }
+
+        .highlight {
+            color: #4DD0E1;
+            font-weight: bold;
+        }
+
+        .danger {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        #gameOverScreen {
+            display: none;
+        }
+
+        .stats {
+            margin: 15px 0;
+            font-size: clamp(14px, 3.2vw, 18px);
+        }
+
+        @media (max-width: 768px) {
+            #startScreen, #gameOverScreen {
+                padding: 10px;
+                padding-top: 10px;
+            }
+            
+            h1 {
+                margin-top: 10px;
+                margin-bottom: 8px;
+            }
+            
+            .instructions {
+                padding: 10px;
+                margin: 8px 0;
+            }
+            
+            p {
+                margin: 4px 0;
+            }
+            
+            button {
+                margin: 12px 0 20px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="canvas"></canvas>
+        
+        <div id="hud">
+            <div class="hudItem">💚 <span id="health">100</span></div>
+            <div class="hudItem">🐟 <span id="food">0</span></div>
+            <div class="hudItem">📏 <span id="distance">0</span>m</div>
+        </div>
+
+        <div id="startScreen">
+            <h1>🐢 Tartaruga Capixaba 🌊</h1>
+            <div class="instructions">
+                <p><strong>🌍 História:</strong></p>
+                <p>Você é uma tartaruga-verde que nasceu nas praias de Regência (Linhares/ES) e precisa nadar pelas águas capixabas em busca de alimento. Mas cuidado! O mar está poluído com lixo plástico!</p>
+                <br>
+                <p><strong>🎮 Controles:</strong></p>
+                <p><span class="highlight">📱 MOBILE:</span> Toque e SEGURE na tela para subir, solte para cair</p>
+                <p><span class="highlight">💻 PC:</span> Use as setas ⬆️⬇️ ou teclas W/S</p>
+                <p><span class="highlight">🔱 ARMA:</span> Após 100m, clique/toque no lixo para destruir!</p>
+                <br>
+                <p><strong>🎯 Objetivo:</strong></p>
+                <p>• <span class="highlight">Colete algas e peixes 🐟</span> para recuperar vida</p>
+                <p>• <span class="danger">Desvie do lixo plástico 🥤🛍️</span> que causa dano</p>
+                <p>• Sobreviva o máximo possível!</p>
+                <br>
+                <p style="font-size: clamp(10px, 2.3vw, 14px); color: #4DD0E1;">
+                    💡 <strong>Fato:</strong> Tartarugas confundem sacolas plásticas com águas-vivas, causando morte por ingestão.
+                </p>
+            </div>
+            <button onclick="startGame()">🌊 COMEÇAR 🌊</button>
+        </div>
+
+        <div id="gameOverScreen">
+            <h2>🐢 Fim da Jornada 🐢</h2>
+            <div class="stats">
+                <p>🐟 Comida: <span id="finalFood" class="highlight">0</span></p>
+                <p>📏 Distância: <span id="finalDistance" class="highlight">0</span>m</p>
+                <p id="causeOfDeath" style="color: #ff6b6b; margin-top: 8px;"></p>
+                <p id="rating" style="font-size: clamp(15px, 3.8vw, 22px); margin-top: 12px; color: #4DD0E1;"></p>
+                
+                <div style="margin-top: 15px; padding: 10px; background: rgba(255, 215, 0, 0.15); border-radius: 10px; border: 2px solid #FFD700;">
+                    <p style="font-size: clamp(13px, 3.2vw, 17px); color: #FFD700;">
+                        🏆 <strong>SEU RECORDE</strong><br>
+                        📏 Distância: <span id="recordDistance">0</span>m<br>
+                        🐟 Comida: <span id="recordFood">0</span>
+                    </p>
+                </div>
+            </div>
+            <div style="max-width: 95%; background: rgba(0, 150, 167, 0.2); padding: 12px; border-radius: 10px; margin: 15px 0; border: 2px solid #4DD0E1;">
+                <p style="font-size: clamp(11px, 2.8vw, 15px);" id="curiosidade">
+                    <strong>💡 Você sabia?</strong><br>
+                    Carregando...
+                </p>
+            </div>
+            <button onclick="restartGame()">🔄 JOGAR NOVAMENTE 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let gameActive = false;
+        let health = 100;
+        let foodCount = 0;
+        let distance = 0;
+        let scrollSpeed = 3;
+        let obstacles = [];
+        let foods = [];
+        let bubbles = [];
+        let keys = {};
+        let hasWeapon = false;
+        let weaponItem = null;
+        
+        let gameData = {
+            maxDistance: 0,
+            maxFood: 0
+        };
+        
+        const curiosidades = [
+            "🐢 Tartarugas-verdes podem viver mais de 80 anos e retornam à mesma praia onde nasceram para desovar!",
+            "🌊 O ES é rota migratória de 5 espécies de tartarugas marinhas, todas ameaçadas de extinção.",
+            "🥤 Uma tartaruga pode confundir uma sacola plástica com uma água-viva, seu alimento favorito.",
+            "🏖️ A praia de Regência (Linhares/ES) é um dos principais pontos de desova de tartarugas no Brasil.",
+            "♀️ A temperatura da areia determina o sexo dos filhotes: areia mais quente = mais fêmeas!",
+            "🌡️ Com o aquecimento global, nascem até 99% de fêmeas em algumas praias, ameaçando a espécie.",
+            "🐢 Tartarugas-verdes podem pesar até 200kg e mergulhar a 100 metros de profundidade!",
+            "🗑️ Mais de 1 milhão de aves e 100 mil mamíferos marinhos morrem por ano devido ao plástico nos oceanos.",
+            "🌿 Tartarugas adultas são herbívoras e pastam em campos de algas marinhas, ajudando a manter o ecossistema.",
+            "👶 Apenas 1 em cada 1.000 filhotes de tartaruga sobrevive até a idade adulta na natureza.",
+            "🔬 O Projeto Tamar já protegeu mais de 40 milhões de filhotes desde 1980!",
+            "🌙 Filhotes nascem à noite e usam a luz da lua refletida no mar para encontrar o oceano.",
+            "💡 Poluição luminosa nas praias confunde filhotes, fazendo-os ir na direção errada e morrer.",
+            "🦈 Tartarugas são presas de tubarões, mas sua maior ameaça hoje é a ação humana.",
+            "🌍 Tartarugas marinhas existem há mais de 100 milhões de anos, desde a época dos dinossauros!"
+        ];
+        
+        const turtle = {
+            x: 120,
+            y: 0,
+            width: 100,
+            height: 80,
+            vy: 0,
+            gravity: 0.3,
+            jumpPower: -8,
+            maxSpeed: 8
+        };
+        
+        const obstacleTypes = [
+            {emoji: '🥤', damage: 15, name: 'Garrafa'},
+            {emoji: '🛍️', damage: 25, name: 'Sacola plástica'},
+            {emoji: '🧴', damage: 15, name: 'Frasco'},
+            {emoji: '🥫', damage: 20, name: 'Lata'},
+            {emoji: '📦', damage: 30, name: 'Caixa'},
+            {emoji: '🍾', damage: 20, name: 'Garrafa de vidro'}
+        ];
+        const foodTypes = [
+            {emoji: '🐟', heal: 10, name: 'Peixe'},
+            {emoji: '🦐', heal: 8, name: 'Camarão'},
+            {emoji: '🌿', heal: 15, name: 'Alga marinha'}
+        ];
+        
+        const obstacleSize = 65;
+        const foodSize = 60;
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            turtle.y = canvas.height / 2;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        class Obstacle {
+            constructor() {
+                this.x = canvas.width + 80;
+                this.y = Math.random() * (canvas.height - 150) + 75;
+                this.size = obstacleSize + Math.random() * 25;
+                const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+                this.emoji = type.emoji;
+                this.damage = type.damage;
+                this.name = type.name;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+            }
+            
+            update() {
+                this.x -= scrollSpeed;
+                this.rotation += this.rotationSpeed;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                if (this.damage >= 25) {
+                    ctx.shadowColor = 'rgba(255, 50, 50, 1)';
+                    ctx.shadowBlur = 15;
+                } else {
+                    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                    ctx.shadowBlur = 10;
+                }
+                
+                ctx.globalAlpha = 1;
+                ctx.font = `${this.size}px Arial`;
+                ctx.fillText(this.emoji, -this.size/2, this.size/2);
+                
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+            
+            collidesWith(obj) {
+                return this.x < obj.x + obj.width &&
+                       this.x + this.size > obj.x &&
+                       this.y < obj.y + obj.height &&
+                       this.y + this.size > obj.y;
+            }
+        }
+        
+        class Food {
+            constructor() {
+                this.x = canvas.width + 80;
+                this.y = Math.random() * (canvas.height - 150) + 75;
+                this.size = foodSize;
+                const type = foodTypes[Math.floor(Math.random() * foodTypes.length)];
+                this.emoji = type.emoji;
+                this.heal = type.heal;
+                this.name = type.name;
+                this.collected = false;
+                this.pulse = 0;
+            }
+            
+            update() {
+                this.x -= scrollSpeed;
+                this.pulse += 0.1;
+            }
+            
+            draw() {
+                if (!this.collected) {
+                    ctx.save();
+                    
+                    ctx.shadowColor = 'rgba(150, 255, 150, 1)';
+                    ctx.shadowBlur = 15;
+                    
+                    ctx.globalAlpha = 1;
+                    const scale = 1 + Math.sin(this.pulse) * 0.1;
+                    ctx.translate(this.x, this.y);
+                    ctx.scale(scale, scale);
+                    
+                    ctx.font = `${this.size}px Arial`;
+                    ctx.fillText(this.emoji, -this.size/2, this.size/3);
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                }
+            }
+            
+            collidesWith(obj) {
+                return !this.collected &&
+                       this.x < obj.x + obj.width &&
+                       this.x + this.size > obj.x &&
+                       this.y - this.size < obj.y + obj.height &&
+                       this.y > obj.y;
+            }
+        }
+        
+        class Bubble {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 8 + 3;
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.speedY = -Math.random() * 2 - 1;
+                this.opacity = 1;
+            }
+            
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.opacity -= 0.02;
+            }
+            
+            draw() {
+                ctx.globalAlpha = this.opacity;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(200, 240, 255, 1)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        class Weapon {
+            constructor() {
+                this.x = canvas.width + 80;
+                this.y = Math.random() * (canvas.height - 150) + 75;
+                this.size = 70;
+                this.emoji = '🔱';
+                this.collected = false;
+                this.pulse = 0;
+            }
+            
+            update() {
+                this.x -= scrollSpeed;
+                this.pulse += 0.15;
+            }
+            
+            draw() {
+                if (!this.collected) {
+                    ctx.save();
+                    
+                    ctx.shadowColor = 'rgba(255, 215, 0, 1)';
+                    ctx.shadowBlur = 20;
+                    
+                    ctx.globalAlpha = 1;
+                    const scale = 1 + Math.sin(this.pulse) * 0.15;
+                    ctx.translate(this.x, this.y);
+                    ctx.scale(scale, scale);
+                    ctx.rotate(this.pulse * 0.5);
+                    
+                    ctx.font = `${this.size}px Arial`;
+                    ctx.fillText(this.emoji, -this.size/2, this.size/3);
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                }
+            }
+            
+            collidesWith(obj) {
+                return !this.collected &&
+                       this.x < obj.x + obj.width &&
+                       this.x + this.size > obj.x &&
+                       this.y - this.size < obj.y + obj.height &&
+                       this.y > obj.y;
+            }
+        }
+        
+        function drawOceanBackground() {
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#004080'); 
+            gradient.addColorStop(0.5, '#0066a3');
+            gradient.addColorStop(1, '#00a8cc');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; 
+            for (let i = 0; i < 20; i++) {
+                const x = (Date.now() * 0.02 + i * 150) % canvas.width;
+                const y = (i * 50) % canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function drawTurtle() {
+            ctx.save();
+            ctx.translate(turtle.x + turtle.width/2, turtle.y + turtle.height/2);
+            ctx.scale(-1, 1);
+            if (turtle.vy > 0) {
+                ctx.rotate(Math.PI / 12);
+            } else if (turtle.vy < 0) {
+                ctx.rotate(-Math.PI / 12);
+            }
+            
+            ctx.shadowColor = 'rgba(255, 255, 255, 1)';
+            ctx.shadowBlur = 20;
+            
+            ctx.globalAlpha = 1;
+            ctx.font = 'bold 100px Arial';
+            ctx.fillText('🐢', -50, 25);
+            
+            if (hasWeapon) {
+                ctx.shadowColor = 'rgba(255, 215, 0, 1)';
+                ctx.shadowBlur = 15;
+                ctx.font = 'bold 50px Arial';
+                ctx.fillText('🔱', -30, 20);
+            }
+            
+            ctx.shadowBlur = 0;
+            ctx.restore();
+            
+            if (Math.random() < 0.05) {
+                bubbles.push(new Bubble(turtle.x, turtle.y + turtle.height/2));
+            }
+        }
+        
+        function spawnObstacle() {
+            if (Math.random() < 0.012) {
+                obstacles.push(new Obstacle());
+            }
+        }
+        
+        function spawnFood() {
+            if (Math.random() < 0.01) {
+                foods.push(new Food());
+            }
+        }
+        
+        function spawnWeapon() {
+            if (!hasWeapon && !weaponItem && distance >= 100) {
+                weaponItem = new Weapon();
+            }
+        }
+        
+        function updateTurtle() {
+            if (keys['ArrowUp'] || keys['KeyW'] || keys['up']) {
+                turtle.vy = Math.max(turtle.vy + turtle.jumpPower * 0.2, -turtle.maxSpeed);
+            }
+            if (keys['ArrowDown'] || keys['KeyS'] || keys['down']) {
+                turtle.vy = Math.min(turtle.vy - turtle.jumpPower * 0.2, turtle.maxSpeed);
+            }
+            
+            turtle.vy += turtle.gravity;
+            turtle.vy = Math.max(Math.min(turtle.vy, turtle.maxSpeed), -turtle.maxSpeed);
+            turtle.y += turtle.vy;
+            
+            turtle.y = Math.max(0, Math.min(turtle.y, canvas.height - turtle.height));
+        }
+        
+        function checkCollisions() {
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                if (obstacles[i].collidesWith(turtle)) {
+                    const damage = obstacles[i].damage;
+                    health -= damage;
+                    health = Math.max(0, health);
+                    updateHUD();
+                    
+                    for (let j = 0; j < 15; j++) {
+                        bubbles.push(new Bubble(turtle.x + turtle.width/2, turtle.y + turtle.height/2));
+                    }
+                    
+                    obstacles.splice(i, 1);
+                    
+                    if (health <= 0) {
+                        endGame('Você foi atingido por muito lixo plástico! 💔');
+                    }
+                }
+            }
+            
+            for (let i = foods.length - 1; i >= 0; i--) {
+                if (foods[i].collidesWith(turtle)) {
+                    foods[i].collected = true;
+                    const healing = foods[i].heal;
+                    health += healing;
+                    health = Math.min(100, health);
+                    foodCount++;
+                    updateHUD();
+                    
+                    for (let j = 0; j < 8; j++) {
+                        bubbles.push(new Bubble(turtle.x + turtle.width, turtle.y + turtle.height/2));
+                    }
+                }
+            }
+            
+            if (weaponItem && weaponItem.collidesWith(turtle)) {
+                weaponItem.collected = true;
+                hasWeapon = true;
+                
+                for (let j = 0; j < 20; j++) {
+                    bubbles.push(new Bubble(turtle.x + turtle.width/2, turtle.y + turtle.height/2));
+                }
+                
+                weaponItem = null;
+            }
+        }
+        
+        function update() {
+            if (!gameActive) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawOceanBackground();
+            
+            updateTurtle();
+            drawTurtle();
+            
+            spawnObstacle();
+            spawnFood();
+            spawnWeapon();
+            
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].update();
+                obstacles[i].draw();
+                if (obstacles[i].x + obstacles[i].size < 0) {
+                    obstacles.splice(i, 1);
+                }
+            }
+            
+            for (let i = foods.length - 1; i >= 0; i--) {
+                foods[i].update();
+                foods[i].draw();
+                if (foods[i].x + foods[i].size < 0) {
+                    foods.splice(i, 1);
+                }
+            }
+            
+            if (weaponItem) {
+                weaponItem.update();
+                weaponItem.draw();
+                if (weaponItem.x + weaponItem.size < 0) {
+                    weaponItem = null;
+                }
+            }
+            
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                bubbles[i].update();
+                bubbles[i].draw();
+                if (bubbles[i].opacity <= 0) {
+                    bubbles.splice(i, 1);
+                }
+            }
+            
+            checkCollisions();
+            
+            distance += 0.1;
+            document.getElementById('distance').textContent = Math.floor(distance);
+            
+            scrollSpeed = 3 + Math.floor(distance / 100) * 0.5;
+            
+            requestAnimationFrame(update);
+        }
+        
+        // Controles de teclado
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+        
+        // Controles mobile - tocar na tela
+        let touchActive = false;
+        let touchDirection = null;
+        
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameActive) return;
+            
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const touchY = touch.clientY - rect.top;
+            
+            // Se tem arma, verifica se tocou em um obstáculo
+            if (hasWeapon) {
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const touchX = (touch.clientX - rect.left) * scaleX;
+                const touchYScaled = touchY * scaleY;
+                
+                let hitObstacle = false;
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    const obs = obstacles[i];
+                    if (touchX >= obs.x && touchX <= obs.x + obs.size &&
+                        touchYScaled >= obs.y && touchYScaled <= obs.y + obs.size) {
+                        
+                        obstacles.splice(i, 1);
+                        
+                        for (let j = 0; j < 25; j++) {
+                            bubbles.push(new Bubble(touchX, touchYScaled));
+                        }
+                        
+                        hitObstacle = true;
+                        break;
+                    }
+                }
+                
+                if (hitObstacle) return;
+            }
+            
+            // Controle de movimento: tocar em qualquer lugar = sobe
+            touchActive = true;
+            touchDirection = 'up';
+            keys['up'] = true;
+        }, { passive: false });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            touchActive = false;
+            keys['up'] = false;
+            keys['down'] = false;
+            touchDirection = null;
+        }, { passive: false });
+        
+        canvas.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            touchActive = false;
+            keys['up'] = false;
+            keys['down'] = false;
+            touchDirection = null;
+        }, { passive: false });
+        
+        // Clique no PC
+        canvas.addEventListener('click', (e) => {
+            if (!gameActive || !hasWeapon) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clickX = (e.clientX - rect.left) * scaleX;
+            const clickY = (e.clientY - rect.top) * scaleY;
+            
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                if (clickX >= obs.x && clickX <= obs.x + obs.size &&
+                    clickY >= obs.y && clickY <= obs.y + obs.size) {
+                    
+                    obstacles.splice(i, 1);
+                    
+                    for (let j = 0; j < 25; j++) {
+                        bubbles.push(new Bubble(clickX, clickY));
+                    }
+                    
+                    break;
+                }
+            }
+        });
+        
+        function updateHUD() {
+            document.getElementById('health').textContent = health;
+            document.getElementById('food').textContent = foodCount;
+        }
+        
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            gameActive = true;
+            health = 100;
+            foodCount = 0;
+            distance = 0;
+            scrollSpeed = 3;
+            obstacles = [];
+            foods = [];
+            bubbles = [];
+            hasWeapon = false;
+
+            weaponItem = null;
+            turtle.y = canvas.height / 2;
+            turtle.vy = 0;
+            updateHUD();
+            update();
+        }
+        
+        function endGame(cause) {
+            gameActive = false;
+            
+            const finalDist = Math.floor(distance);
+            
+            if (finalDist > gameData.maxDistance) {
+                gameData.maxDistance = finalDist;
+            }
+            
+            if (foodCount > gameData.maxFood) {
+                gameData.maxFood = foodCount;
+            }
+            
+            document.getElementById('finalFood').textContent = foodCount;
+            document.getElementById('finalDistance').textContent = finalDist;
+            document.getElementById('recordDistance').textContent = gameData.maxDistance;
+            document.getElementById('recordFood').textContent = gameData.maxFood;
+            document.getElementById('causeOfDeath').textContent = cause;
+            
+            const indiceAleatorio = Math.floor(Math.random() * curiosidades.length);
+            const curiosidadeSelecionada = curiosidades[indiceAleatorio];
+            document.getElementById('curiosidade').innerHTML = `<strong>💡 Você sabia?</strong><br>${curiosidadeSelecionada}`;
+            
+            let rating = '';
+            if (finalDist >= 500) {
+                rating = '🏆 LENDÁRIA! Dominou o oceano!';
+            } else if (finalDist >= 300) {
+                rating = '⭐ EXPERIENTE! Excelente!';
+            } else if (finalDist >= 150) {
+                rating = '👍 BOA TENTATIVA!';
+            } else {
+                rating = '💪 INICIANTE! Tente novamente!';
+            }
+            
+            document.getElementById('rating').textContent = rating;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+        }
+        
+        function restartGame() {
+            document.getElementById('gameOverScreen').style.display = 'none';
+            startGame();
+        }
+    </script>
+</body>
+</html>

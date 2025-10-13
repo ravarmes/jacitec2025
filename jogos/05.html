@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardião das Nascentes do Caparaó</title>
+    <style>
+        /* ===== CONFIGURAÇÕES GERAIS ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e5128 0%, #4e9f3d 50%, #8ed973 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ===== ANIMAÇÃO DE FUNDO ===== */
+        .clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 100px;
+            animation: float 30s infinite linear;
+        }
+
+        @keyframes float {
+            from { left: -200px; }
+            to { left: 100%; }
+        }
+
+        /* ===== CONTAINER PRINCIPAL ===== */
+        .game-container {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* ===== CABEÇALHO ===== */
+        header {
+            background: linear-gradient(135deg, #2d6a4f, #1b4332);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            opacity: 0.9;
+        }
+
+        /* ===== PAINEL DE ESTATÍSTICAS ===== */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #2d6a4f;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            color: #1b4332;
+            font-weight: bold;
+        }
+
+        /* ===== ÁREA DA NASCENTE ===== */
+        .spring-area {
+            background: linear-gradient(180deg, #74c0fc 0%, #a5d8ff 50%, #e7f5ff 100%);
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spring-visual {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            background: radial-gradient(circle, #4dabf7, #1c7ed6);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s;
+            position: relative;
+            box-shadow: 0 0 30px rgba(29, 126, 214, 0.5);
+            animation: pulse 2s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(29, 126, 214, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(29, 126, 214, 0.8); }
+        }
+
+        .spring-visual:active {
+            transform: scale(0.95);
+        }
+
+        .purity-level {
+            font-size: 1.2rem;
+            color: #1b4332;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* ===== EFEITO DE CLIQUE ===== */
+        .click-effect {
+            position: fixed;
+            color: #0ca678;
+            font-weight: bold;
+            font-size: 24px;
+            pointer-events: none;
+            animation: floatUp 1s forwards;
+            z-index: 9999;
+        }
+
+        @keyframes floatUp {
+            to {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+
+        /* ===== PAINEL DE MELHORIAS ===== */
+        .upgrades-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .upgrades-panel h2 {
+            color: #2d6a4f;
+            margin-bottom: 15px;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+        }
+
+        .upgrades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .upgrade-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 15px;
+            border-radius: 15px;
+            border: 3px solid #95d5b2;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upgrade-card:hover:not(.disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-color: #52b788;
+        }
+
+        .upgrade-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #ccc;
+        }
+
+        .upgrade-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .upgrade-name {
+            font-weight: bold;
+            color: #1b4332;
+            margin-bottom: 5px;
+        }
+
+        .upgrade-desc {
+            font-size: 0.85rem;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .upgrade-cost {
+            color: #2d6a4f;
+            font-weight: bold;
+        }
+
+        .upgrade-owned {
+            font-size: 0.8rem;
+            color: #0ca678;
+            margin-top: 5px;
+        }
+
+        /* ===== EVENTOS DE AMEAÇA ===== */
+        .threat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .threat-card {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: scaleIn 0.3s;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); }
+            to { transform: scale(1); }
+        }
+
+        .threat-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .threat-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .threat-desc {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .threat-button {
+            background: white;
+            color: #ee5a6f;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .threat-button:hover {
+            transform: scale(1.05);
+        }
+
+        /* ===== TELA DE VITÓRIA ===== */
+        .victory-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .victory-card {
+            background: linear-gradient(135deg, #51cf66, #37b24d);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .victory-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .victory-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .victory-desc {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .victory-button {
+            background: white;
+            color: #37b24d;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .victory-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* ===== PAINEL EDUCATIVO ===== */
+        .info-panel {
+            background: linear-gradient(135deg, #fff3bf, #ffe066);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-left: 5px solid #ffd43b;
+        }
+
+        .info-panel h3 {
+            color: #862e9c;
+            margin-bottom: 10px;
+        }
+
+        .info-panel p {
+            color: #495057;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* ===== RESPONSIVIDADE ===== */
+        @media (max-width: 600px) {
+            .upgrades-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .spring-visual {
+                width: 150px;
+                height: 150px;
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="clouds" id="clouds"></div>
+
+    <div class="game-container">
+        <header>
+            <h1>🏔️ Guardião das Nascentes do Caparaó</h1>
+            <p class="subtitle">Proteja as nascentes que alimentam o Espírito Santo</p>
+        </header>
+
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-label">💧 Pontos de Conservação</div>
+                <div class="stat-value" id="points">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">⚡ Pontos por Clique</div>
+                <div class="stat-value" id="pointsPerClick">1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🌊 Pontos por Segundo</div>
+                <div class="stat-value" id="pointsPerSecond">0</div>
+            </div>
+        </div>
+
+        <div class="spring-area">
+            <div class="spring-visual" id="springVisual">💧</div>
+            <div class="purity-level">Pureza da Nascente: <span id="purityLevel">0</span>%</div>
+            <p style="color: #1b4332; margin-top: 10px;">Clique na nascente para purificá-la!</p>
+        </div>
+
+        <div class="info-panel">
+            <h3>📚 Você Sabia?</h3>
+            <p id="educationalText">O Parque Nacional do Caparaó abriga várias nascentes que alimentam rios importantes do Espírito Santo, como o Rio Itapemirim e o Rio Itabapoana.</p>
+        </div>
+
+        <div class="upgrades-panel">
+            <h2>🌱 Melhorias de Conservação</h2>
+            <div class="upgrades-grid" id="upgradesGrid"></div>
+        </div>
+    </div>
+
+    <div class="threat-overlay" id="threatOverlay">
+        <div class="threat-card">
+            <div class="threat-icon" id="threatIcon">🔥</div>
+            <div class="threat-title" id="threatTitle">Ameaça Detectada!</div>
+            <div class="threat-desc" id="threatDesc">Uma queimada está se aproximando da nascente!</div>
+            <button class="threat-button" id="threatButton">NEUTRALIZAR AMEAÇA!</button>
+        </div>
+    </div>
+
+    <div class="victory-overlay" id="victoryOverlay">
+        <div class="victory-card">
+            <div class="victory-icon">🏆</div>
+            <div class="victory-title">Parabéns, Guardião!</div>
+            <div class="victory-desc">
+                Você alcançou 70.000 pontos de conservação e atingiu 100% de pureza! 
+                As nascentes do Caparaó estão protegidas e suas águas cristalinas fluem 
+                alimentando os rios do Espírito Santo! 🌊
+            </div>
+            
+            <div class="victory-stats">
+                <h4>📊 Suas Conquistas</h4>
+                <p><strong>💧 Pontos Totais:</strong> <span id="finalPoints">0</span></p>
+                <p><strong>⚡ Poder por Clique:</strong> <span id="finalClickPower">0</span></p>
+                <p><strong>🌊 Geração por Segundo:</strong> <span id="finalPerSecond">0</span></p>
+            </div>
+            
+            <div class="victory-stats">
+                <h4>🏔️ Sobre o Parque Nacional do Caparaó</h4>
+                
+                <div class="info-box">
+                    <strong>💧 Nascentes Vitais</strong>
+                    <p>O Caparaó protege as nascentes dos rios Itapemirim e Itabapoana, que abastecem mais de 50 municípios no ES e MG, fornecendo água para milhares de pessoas.</p>
+                </div>
+                
+                <div class="info-box">
+                    <strong>🌳 Biodiversidade Única</strong>
+                    <p>A região possui 335 espécies de aves, 102 de mamíferos e mais de 1.500 espécies de plantas. Animais ameaçados como a onça-parda encontram refúgio aqui.</p>
+                </div>
+                
+                <div class="info-box">
+                    <strong>🌡️ Regulação Climática</strong>
+                    <p>As florestas do Caparaó capturam cerca de 20 toneladas de CO₂ por hectare/ano, contribuindo significativamente para o combate às mudanças climáticas.</p>
+                </div>
+                
+                <div class="info-box">
+                    <strong>⚠️ Ameaças Reais</strong>
+                    <p>Queimadas, desmatamento ilegal, expansão agrícola e turismo desordenado são os principais perigos. A proteção contínua é essencial!</p>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="victory-button" id="continueButton">CONTINUAR JOGANDO</button>
+                <button class="victory-button" id="restartButton" style="background: #f03e3e; color: white;">RECOMEÇAR DO ZERO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== VARIÁVEIS DO JOGO =====
+        const gameState = {
+            points: 0,
+            pointsPerClick: 1,
+            pointsPerSecond: 0,
+            purityLevel: 0,
+            victoryShown: false
+        };
+
+        // ===== MELHORIAS =====
+        const upgrades = [
+            {
+                id: 'seedlings',
+                name: 'Plantar Mudas',
+                icon: '🌱',
+                desc: 'Plante mudas nativas (+1 por clique)',
+                baseCost: 10,
+                owned: 0,
+                clickBonus: 1,
+                autoBonus: 0
+            },
+            {
+                id: 'fence',
+                name: 'Cercar Nascente',
+                icon: '🚧',
+                desc: 'Proteja a nascente (+1/s)',
+                baseCost: 50,
+                owned: 0,
+                clickBonus: 0,
+                autoBonus: 1
+            },
+            {
+                id: 'education',
+                name: 'Educação Ambiental',
+                icon: '📚',
+                desc: 'Conscientize a comunidade (+5/s)',
+                baseCost: 150,
+                owned: 0,
+                clickBonus: 0,
+                autoBonus: 5
+            },
+            {
+                id: 'surveillance',
+                name: 'Fiscalização',
+                icon: '👮',
+                desc: 'Monitore e previna ameaças (+15/s)',
+                baseCost: 500,
+                owned: 0,
+                clickBonus: 0,
+                autoBonus: 15
+            },
+            {
+                id: 'reforestation',
+                name: 'Reflorestamento',
+                icon: '🌳',
+                desc: 'Restaure a mata (+10 clique, +30/s)',
+                baseCost: 2000,
+                owned: 0,
+                clickBonus: 10,
+                autoBonus: 30
+            },
+            {
+                id: 'research',
+                name: 'Centro de Pesquisa',
+                icon: '🔬',
+                desc: 'Tecnologias de conservação (+100/s)',
+                baseCost: 10000,
+                owned: 0,
+                clickBonus: 0,
+                autoBonus: 100
+            }
+        ];
+
+        // ===== TEXTOS EDUCATIVOS =====
+        const educationalTexts = [
+            "O Parque Nacional do Caparaó abriga várias nascentes que alimentam rios importantes do Espírito Santo, como o Rio Itapemirim e o Rio Itabapoana.",
+            "A região da Serra do Caparaó é uma das mais ricas em biodiversidade, e suas águas abastecem diversas cidades capixabas.",
+            "As principais ameaças às nascentes são o desmatamento, o uso irregular do solo, o lixo e as queimadas.",
+            "Proteger as nascentes ajuda a garantir água limpa, reduzir enchentes e preservar o equilíbrio climático.",
+            "A Mata Atlântica do Caparaó funciona como uma esponja natural, absorvendo e filtrando a água da chuva.",
+            "Animais como a jaguatirica, o quati e o sabiá-laranjeira dependem das nascentes preservadas para sobreviver.",
+            "Cada árvore plantada ajuda a reter o solo e aumenta a infiltração de água no lençol freático."
+        ];
+
+        // ===== AMEAÇAS =====
+        const threats = [
+            {
+                icon: '🔥',
+                title: 'Queimada Detectada!',
+                desc: 'Uma queimada está se aproximando da nascente!',
+                penalty: 50
+            },
+            {
+                icon: '🪓',
+                title: 'Desmatamento Ilegal!',
+                desc: 'Madeireiros estão cortando árvores!',
+                penalty: 75
+            },
+            {
+                icon: '🗑️',
+                title: 'Poluição por Lixo!',
+                desc: 'Lixo foi despejado próximo ao córrego!',
+                penalty: 40
+            },
+            {
+                icon: '🏭',
+                title: 'Contaminação Química!',
+                desc: 'Produtos químicos ameaçam a água!',
+                penalty: 100
+            },
+            {
+                icon: '🚜',
+                title: 'Expansão Agrícola!',
+                desc: 'Cultivo irregular avança sobre a área!',
+                penalty: 60
+            }
+        ];
+
+        // ===== FUNÇÃO: CLIQUE NA NASCENTE =====
+        document.getElementById('springVisual').addEventListener('click', function(e) {
+            gameState.points += gameState.pointsPerClick;
+            gameState.purityLevel = Math.min(100, gameState.purityLevel + 0.3);
+            
+            createClickEffect(e.clientX, e.clientY, gameState.pointsPerClick);
+            updateDisplay();
+            renderUpgrades();
+        });
+
+        // ===== EFEITO VISUAL DE CLIQUE =====
+        function createClickEffect(x, y, value) {
+            const effect = document.createElement('div');
+            effect.className = 'click-effect';
+            effect.textContent = `+${value}`;
+            effect.style.left = x + 'px';
+            effect.style.top = y + 'px';
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 1000);
+        }
+
+        // ===== CALCULAR CUSTO =====
+        function calculateCost(upgrade) {
+            return Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.owned));
+        }
+
+        // ===== COMPRAR MELHORIA =====
+        function buyUpgrade(upgradeId) {
+            const upgrade = upgrades.find(u => u.id === upgradeId);
+            const cost = calculateCost(upgrade);
+            
+            if (gameState.points >= cost) {
+                gameState.points -= cost;
+                upgrade.owned++;
+                gameState.pointsPerClick += upgrade.clickBonus;
+                gameState.pointsPerSecond += upgrade.autoBonus;
+                
+                updateDisplay();
+                renderUpgrades();
+            }
+        }
+
+        // ===== RENDERIZAR MELHORIAS =====
+        function renderUpgrades() {
+            const grid = document.getElementById('upgradesGrid');
+            grid.innerHTML = '';
+            
+            upgrades.forEach(upgrade => {
+                const cost = calculateCost(upgrade);
+                const canAfford = gameState.points >= cost;
+                
+                const card = document.createElement('div');
+                card.className = `upgrade-card ${!canAfford ? 'disabled' : ''}`;
+                card.innerHTML = `
+                    <div class="upgrade-icon">${upgrade.icon}</div>
+                    <div class="upgrade-name">${upgrade.name}</div>
+                    <div class="upgrade-desc">${upgrade.desc}</div>
+                    <div class="upgrade-cost">Custo: ${cost} pontos</div>
+                    <div class="upgrade-owned">Quantidade: ${upgrade.owned}</div>
+                `;
+                
+                card.addEventListener('click', () => buyUpgrade(upgrade.id));
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // ===== ATUALIZAR DISPLAY =====
+        function updateDisplay() {
+            document.getElementById('points').textContent = Math.floor(gameState.points);
+            document.getElementById('pointsPerClick').textContent = gameState.pointsPerClick;
+            document.getElementById('pointsPerSecond').textContent = gameState.pointsPerSecond.toFixed(1);
+            document.getElementById('purityLevel').textContent = Math.floor(gameState.purityLevel);
+            
+            if (gameState.points >= 70000 && !gameState.victoryShown) {
+                gameState.victoryShown = true;
+                gameState.purityLevel = 100;
+                document.getElementById('finalPoints').textContent = Math.floor(gameState.points).toLocaleString('pt-BR');
+                document.getElementById('finalClickPower').textContent = gameState.pointsPerClick;
+                document.getElementById('finalPerSecond').textContent = gameState.pointsPerSecond.toFixed(1);
+                document.getElementById('victoryOverlay').style.display = 'flex';
+            }
+        }
+
+        // ===== GANHO AUTOMÁTICO =====
+        setInterval(() => {
+            if (gameState.pointsPerSecond > 0) {
+                gameState.points += gameState.pointsPerSecond / 10;
+                gameState.purityLevel = Math.min(100, gameState.purityLevel + 0.006);
+                updateDisplay();
+            }
+        }, 100);
+
+        // ===== TROCAR TEXTO EDUCATIVO =====
+        let textIndex = 0;
+        setInterval(() => {
+            textIndex = (textIndex + 1) % educationalTexts.length;
+            document.getElementById('educationalText').textContent = educationalTexts[textIndex];
+        }, 15000);
+
+        // ===== SISTEMA DE AMEAÇAS =====
+        function triggerThreat() {
+            const threat = threats[Math.floor(Math.random() * threats.length)];
+            document.getElementById('threatIcon').textContent = threat.icon;
+            document.getElementById('threatTitle').textContent = threat.title;
+            document.getElementById('threatDesc').textContent = threat.desc;
+            document.getElementById('threatOverlay').style.display = 'flex';
+            
+            window.currentPenalty = threat.penalty;
+        }
+
+        function neutralizeThreat() {
+            const penalty = window.currentPenalty || 0;
+            gameState.points = Math.max(0, gameState.points - penalty * 0.3);
+            gameState.purityLevel = Math.max(0, gameState.purityLevel - 3);
+            document.getElementById('threatOverlay').style.display = 'none';
+            updateDisplay();
+        }
+
+        function scheduleNextThreat() {
+            const delay = (30 + Math.random() * 30) * 1000;
+            setTimeout(() => {
+                triggerThreat();
+                scheduleNextThreat();
+            }, delay);
+        }
+
+        // ===== EVENT LISTENERS =====
+        document.getElementById('threatButton').addEventListener('click', neutralizeThreat);
+        document.getElementById('continueButton').addEventListener('click', () => {
+            document.getElementById('victoryOverlay').style.display = 'none';
+        });
+        
+        document.getElementById('restartButton').addEventListener('click', () => {
+            // Resetar completamente o jogo
+            gameState.points = 0;
+            gameState.pointsPerClick = 1;
+            gameState.pointsPerSecond = 0;
+            gameState.purityLevel = 0;
+            gameState.victoryShown = false;
+            
+            // Resetar todas as melhorias
+            upgrades.forEach(upgrade => {
+                upgrade.owned = 0;
+            });
+            
+            document.getElementById('victoryOverlay').style.display = 'none';
+            updateDisplay();
+            renderUpgrades();
+        });
+
+        // ===== CRIAR NUVENS =====
+        function createClouds() {
+            const container = document.getElementById('clouds');
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                cloud.style.top = Math.random() * 50 + '%';
+                cloud.style.width = (60 + Math.random() * 40) + 'px';
+                cloud.style.height = (30 + Math.random() * 20) + 'px';
+                cloud.style.animationDelay = Math.random() * 10 + 's';
+                container.appendChild(cloud);
+            }
+        }
+
+        // ===== INICIALIZAÇÃO =====
+        renderUpgrades();
+        createClouds();
+        scheduleNextThreat();
+        updateDisplay();
+    </script>
+</body>
+</html>
