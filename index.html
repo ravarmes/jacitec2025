@@ -9,20 +9,30 @@
     content="Apresentação dos 21 jogos desenvolvidos pela disciplina Programação 1 para a JACITEC 2025." />
   <style>
     :root {
-      --bg: #0f172a;
+      --bg: #e0f2fe;
+      /* light cyan-50 */
+      --card: #ffffff;
+      /* white */
+      --text: #0f172a;
       /* slate-900 */
+      --muted: #475569;
+      /* slate-600 */
+      --accent: #0891b2;
+      /* cyan-600 */
+      --accent-2: #0284c7;
+      /* sky-600 */
+      --border: #cbd5e1;
+      /* slate-300 */
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #0f172a;
       --card: #111827;
-      /* gray-900 */
       --text: #e5e7eb;
-      /* gray-200 */
       --muted: #9ca3af;
-      /* gray-400 */
       --accent: #22d3ee;
-      /* cyan-400 */
       --accent-2: #60a5fa;
-      /* blue-400 */
       --border: #1f2937;
-      /* gray-800 */
     }
 
     * {
@@ -37,6 +47,11 @@
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 10% 0%, #bfdbfe 0%, var(--bg) 50%, #a7f3d0 100%);
+      color: var(--text);
+    }
+
+    :root[data-theme="dark"] body {
       background: radial-gradient(1200px 600px at 10% 0%, #0b1222 0%, var(--bg) 50%, #0b1222 100%);
       color: var(--text);
     }
@@ -46,8 +61,12 @@
       top: 0;
       z-index: 30;
       backdrop-filter: blur(8px);
-      background: rgba(15, 23, 42, 0.8);
+      background: rgba(224, 242, 254, 0.9);
       border-bottom: 1px solid var(--border);
+    }
+
+    :root[data-theme="dark"] header {
+      background: rgba(8, 15, 27, 0.9);
     }
 
     .nav {
@@ -57,6 +76,21 @@
       display: flex;
       align-items: center;
       gap: 16px;
+    }
+
+    .theme-toggle {
+      margin-left: auto;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    :root[data-theme="dark"] .theme-toggle {
+      background: rgba(17, 24, 39, 0.8);
     }
 
     .logo {
@@ -75,7 +109,7 @@
       display: grid;
       place-items: center;
       font-weight: 700;
-      color: #082f49;
+      color: #ffffff;
     }
 
     .subtitle {
@@ -130,13 +164,25 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       overflow: hidden;
-      background: linear-gradient(180deg, rgba(17, 24, 39, 0.85), rgba(11, 18, 34, 0.85));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    :root[data-theme="dark"] .card {
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.95), rgba(8, 15, 27, 0.95));
     }
 
     .card-media {
       width: 100%;
       aspect-ratio: 16 / 9;
       border-bottom: 1px solid var(--border);
+      background: #f1f5f9;
+    }
+
+    :root[data-theme="dark"] .card-media,
+    :root[data-theme="dark"] .team-avatar,
+    :root[data-theme="dark"] .carousel-viewport,
+    :root[data-theme="dark"] .banner {
       background: #0b1222;
     }
 
@@ -173,7 +219,7 @@
       border-radius: 50%;
       overflow: hidden;
       border: 1px solid var(--border);
-      background: #0b1222;
+      background: #f1f5f9;
     }
 
     .team-avatar img {
@@ -186,6 +232,11 @@
     .muted {
       color: var(--muted);
       font-size: 14px;
+    }
+
+    /* Reset de figure para evitar margens padrão do navegador (1em 40px) */
+    figure {
+      margin: 0;
     }
 
     .pill {
@@ -218,7 +269,7 @@
     .banner {
       width: 100%;
       border-bottom: 1px solid var(--border);
-      background: #0b1222;
+      background: #f1f5f9;
     }
 
     .banner-inner {
@@ -244,7 +295,7 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       overflow: hidden;
-      background: #0b1222;
+      background: #f1f5f9;
     }
 
     .carousel-track {
@@ -281,9 +332,9 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(0, 0, 0, 0.4);
-      color: #fff;
-      border: none;
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--text);
+      border: 1px solid var(--border);
       padding: 6px 8px;
       font-size: 20px;
       cursor: pointer;
@@ -291,7 +342,15 @@
     }
 
     .carousel-control:hover {
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    :root[data-theme="dark"] .carousel-control {
+      background: rgba(17, 24, 39, 0.8);
+    }
+
+    :root[data-theme="dark"] .carousel-control:hover {
+      background: rgba(17, 24, 39, 0.95);
     }
 
     .carousel-control.prev {
@@ -330,6 +389,7 @@
             Água</span>
         </div>
       </a>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Alternar tema">🌙 Escuro</button>
     </nav>
   </header>
 
@@ -357,6 +417,27 @@
   </footer>
 
   <script>
+    (function () {
+      const root = document.documentElement;
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initial = saved ? saved : (prefersDark ? 'dark' : 'light');
+      const apply = (t) => {
+        root.setAttribute('data-theme', t);
+        const btn = document.getElementById('theme-toggle');
+        if (btn) btn.textContent = t === 'dark' ? '☀️ Claro' : '🌙 Escuro';
+      };
+      apply(initial);
+      window.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+          const current = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('theme', current);
+          apply(current);
+        });
+      });
+    })();
     // Lista de subtemas dos 20 jogos (associados corretamente aos títulos)
     const subThemes = [
       "Poluição Marinha e Lixo nas Praias Capixabas", // Tartaruga Capixaba
